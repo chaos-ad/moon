@@ -26,6 +26,8 @@ static int init(ErlNifEnv *env, void **priv, ERL_NIF_TERM load_info)
     atoms.invalid_type      = enif_make_atom(env, "invalid_type");
     atoms.not_implemented   = enif_make_atom(env, "not_implemented");
 
+    enif_fprintf(stderr, "*** loading nif\n");
+
     res_type = enif_open_resource_type(
         env, "lua", "lua_vm", lua::vm_t::destroy,
         static_cast<ErlNifResourceFlags>(ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER), NULL

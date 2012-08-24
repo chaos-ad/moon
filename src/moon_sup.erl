@@ -25,6 +25,10 @@ stop_child(Pid) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 init([]) ->
+
+    %% To get an error immideately, if there some troubles with nif
+    code:ensure_loaded(moon_nif),
+
     {ok, { {simple_one_for_one, 5, 10}, [
         {moon_vm, {moon_vm, start_link, []}, temporary, 60000, worker, [moon_vm]}
     ]} }.

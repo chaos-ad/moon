@@ -1,8 +1,8 @@
 #include "types.hpp"
 #include "queue.hpp"
-#include <boost/shared_ptr.hpp>
 
-#include <lua.h>
+#include <lua.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace lua {
 

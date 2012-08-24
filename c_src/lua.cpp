@@ -1,16 +1,5 @@
 #include "lua.hpp"
 
- // I'm ugly and I know it:
-extern "C"
-{
-    #include <lua.h>
-    #include <lualib.h>
-    #include <lauxlib.h>
-}
-
-#include <cstdio>
-
-
 namespace lua {
 
 /////////////////////////////////////////////////////////////////////////////
@@ -53,7 +42,7 @@ vm_t::vm_t(erlcpp::lpid_t const& pid)
 
 vm_t::~vm_t()
 {
-//     lua_close(luastate_);
+    lua_close(luastate_);
     enif_fprintf(stderr, "*** destruct the vm\n");
 }
 
