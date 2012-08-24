@@ -76,6 +76,7 @@ public :
     typedef std::vector<term_t> data_t;
     tuple_t() {};
     tuple_t(data_t const& val) : data_t(val) {};
+    explicit tuple_t(data_t::size_type sz) : data_t(sz) {};
 };
 
 /////////////////////////////////////////////////////////////////////////////

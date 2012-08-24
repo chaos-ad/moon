@@ -2,6 +2,8 @@
 #include "types.hpp"
 #include "utils.hpp"
 
+using namespace erlcpp;
+
 /////////////////////////////////////////////////////////////////////////////
 
 static struct {
@@ -46,7 +48,7 @@ static ERL_NIF_TERM start(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[])
             return enif_make_badarg(env);
         }
 
-        erlcpp::lpid_t pid = erlcpp::get_pid(env, argv[0]);
+        lpid_t pid = from_erl<lpid_t>(env, argv[0]);
         boost::shared_ptr<lua::vm_t> vm = lua::vm_t::create(res_type, pid);
         ERL_NIF_TERM result = enif_make_resource(env, vm.get());
         return enif_make_tuple2(env, atoms.ok, result);
@@ -70,8 +72,8 @@ static ERL_NIF_TERM call(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
             return enif_make_badarg(env);
         }
 
-        erlcpp::atom_t fun = erlcpp::get_atom(env, argv[1]);
-        erlcpp::list_t args = erlcpp::get_list(env, argv[2]);
+        atom_t fun = from_erl<atom_t>(env, argv[1]);
+        list_t args = from_erl<list_t>(env, argv[2]);
         lua::vm_t::tasks::call_t call(fun, args);
         vm->add_task(lua::vm_t::task_t(call));
 
@@ -96,7 +98,7 @@ static ERL_NIF_TERM result(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
             return enif_make_badarg(env);
         }
 
-        erlcpp::term_t term = erlcpp::get_term(env, argv[1]);
+        term_t term = from_erl<term_t>(env, argv[1]);
         lua::vm_t::tasks::resp_t resp(term);
         vm->add_task(lua::vm_t::task_t(resp));
 

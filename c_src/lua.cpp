@@ -1,4 +1,5 @@
 #include "lua.hpp"
+#include "utils.hpp"
 
 namespace lua {
 
@@ -12,8 +13,27 @@ struct perform_task : public boost::static_visitor<bool>
     {
         enif_fprintf(stderr, "*** call task: %s\n", call.fun.c_str());
         boost::shared_ptr<ErlNifEnv> env(enif_alloc_env(), enif_free_env);
-        ERL_NIF_TERM term = enif_make_tuple2(env.get(), enif_make_atom(env.get(), "so"), enif_make_atom(env.get(), "cool"));
-        enif_send(NULL, vm_.erl_pid().ptr(), env.get(), term);
+
+        erlcpp::tuple_t result(2);
+        erlcpp::tuple_t response(2);
+        result[0] = erlcpp::atom_t("ok");
+        erlcpp::list_t list;
+        int32_t num_32  = std::rand();
+        int64_t num_64  = static_cast<int64_t>(std::rand()) << 32 | std::rand();
+        double  num_dbl = std::sin(3.14/2);
+        list.push_back(erlcpp::num_t(num_32));
+        list.push_back(erlcpp::num_t(num_64));
+        list.push_back(erlcpp::num_t(num_dbl));
+        erlcpp::binary_t binary;
+        std::generate_n(std::back_inserter(binary), 10, std::rand);
+        list.push_back(binary);
+        result[1] = list;
+
+        response[0] = erlcpp::atom_t("moon_response");
+        response[1] = result;
+
+        enif_send(NULL, vm_.erl_pid().ptr(), env.get(), erlcpp::to_erl(env.get(), response));
+
         return true;
     }
     bool operator()(vm_t::tasks::resp_t const& resp)
