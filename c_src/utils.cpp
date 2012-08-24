@@ -125,4 +125,12 @@ term_t get_term(ErlNifEnv* env, ERL_NIF_TERM term)
 
 /////////////////////////////////////////////////////////////////////////////
 
+void validate_args(int argc, int needed)
+{
+    if (argc != needed)
+    {
+        throw errors::badarg();
+    }
+}
+
 }

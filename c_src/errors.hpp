@@ -6,6 +6,7 @@
 
 namespace erlcpp { namespace errors {
 
+struct badarg : std::exception {};
 struct enomem : public std::runtime_error
 {
     enomem() : std::runtime_error("enomem") {}

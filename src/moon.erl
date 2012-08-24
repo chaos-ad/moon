@@ -1,20 +1,41 @@
 -module(moon).
 
--export([init/0, open/0, close/1, call/2]).
--on_load(init/0).
+-export([start/0, stop/0]).
+-export([start_vm/0, stop_vm/1, call/3]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-init() ->
-    {ok, CWD} = file:get_cwd(),
-    NifPath = filename:join(CWD, "priv/moon"),
-    ok = erlang:load_nif(NifPath, 0).
+start() ->
+    start(?MODULE).
 
-open() ->
-    exit(nif_library_not_loaded).
+start(App) ->
+    start_ok(App, application:start(App, permanent)).
 
-close(_) ->
-    exit(nif_library_not_loaded).
+stop() ->
+    application:stop(?MODULE).
 
-call(_, _) ->
-    exit(nif_library_not_loaded).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+start_ok(_, ok) ->
+    ok;
+
+start_ok(_, {error, {already_started, _App}}) ->
+    ok;
+
+start_ok(App, {error, {not_started, Dep}}) when App =/= Dep ->
+    ok = start(Dep),
+    start(App);
+
+start_ok(App, {error, Reason}) ->
+    erlang:error({app_start_failed, App, Reason}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+start_vm() ->
+    moon_sup:start_child().
+
+stop_vm(Pid) ->
+    moon_sup:stop_child(Pid).
+
+call(Pid, Fun, Args) ->
+    moon_vm:call(Pid, Fun, Args).

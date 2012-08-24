@@ -26,5 +26,5 @@ distclean: clean
 	rm -rfv ebin deps priv/logs
 
 start:
-	exec erl -pa ebin deps/*/ebin -boot start_sasl
+	exec erl -pa ebin deps/*/ebin -boot start_sasl -s $(APP)
 

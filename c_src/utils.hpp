@@ -17,6 +17,6 @@ term_t   get_term(ErlNifEnv* env, ERL_NIF_TERM term);
 
 /////////////////////////////////////////////////////////////////////////////
 
-// ERL_NIF_TERM set_num(ErlNifEnv * env, 
+void validate_args(int argc, int neeeded);
 
 }
