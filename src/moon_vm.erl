@@ -46,9 +46,11 @@ code_change(_, State, _) ->
 
 receive_response(VM) ->
     receive
-        {VM, response, Response} ->
-            {reply, Response, VM};
-        {VM, callback, {M, F, A}} ->
+        {moon_response, Response} ->
+            Response;
+        {moon_callback, {M, F, A}} ->
             moon_nif:callback_result(VM, catch erlang:apply(M,F,A)),
-            receive_response(VM)
+            receive_response(VM);
+        Other ->
+            error({invalid_response, Other})
     end.
