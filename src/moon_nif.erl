@@ -29,4 +29,4 @@ init() ->
         Dir ->
             filename:join(Dir, ?MODULE)
     end,
-    ok = erlang:load_nif(SoName, 0).
+    ok = erlang:load_nif(filename:absname(SoName), 0).
