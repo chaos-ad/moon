@@ -28,3 +28,6 @@ distclean: clean
 start:
 	exec erl -pa ebin deps/*/ebin -boot start_sasl -s $(APP)
 
+test:
+	mkdir -p .eunit
+	$(REBAR) eunit skip_deps=true -v || true

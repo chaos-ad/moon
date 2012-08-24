@@ -10,7 +10,7 @@ struct perform_task : public boost::static_visitor<bool>
 
     bool operator()(vm_t::tasks::call_t const& call)
     {
-        enif_fprintf(stderr, "*** call task: ~s\n", call.fun.c_str());
+        enif_fprintf(stderr, "*** call task: %s\n", call.fun.c_str());
         boost::shared_ptr<ErlNifEnv> env(enif_alloc_env(), enif_free_env);
         ERL_NIF_TERM term = enif_make_tuple2(env.get(), enif_make_atom(env.get(), "so"), enif_make_atom(env.get(), "cool"));
         enif_send(NULL, vm_.erl_pid().ptr(), env.get(), term);

@@ -18,6 +18,15 @@ result(_, _) ->
 %% local functions:
 
 init() ->
-    {ok, CWD} = file:get_cwd(),
-    NifPath = filename:join(CWD, "priv/moon_nif"),
-    ok = erlang:load_nif(NifPath, 0).
+    SoName = case code:priv_dir(?MODULE) of
+        {error, bad_name} ->
+            case filelib:is_dir(filename:join(["..", priv])) of
+                true ->
+                    filename:join(["..", priv, ?MODULE]);
+                _ ->
+                    filename:join([priv, ?MODULE])
+            end;
+        Dir ->
+            filename:join(Dir, ?MODULE)
+    end,
+    ok = erlang:load_nif(SoName, 0).

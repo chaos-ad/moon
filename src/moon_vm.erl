@@ -7,12 +7,15 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 %% api:
--export([start_link/0, call/3]).
+-export([start_link/0, start_link/1, call/3]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
+
+start_link(Name) when is_atom(Name) ->
+    gen_server:start_link({local, Name}, ?MODULE, [], []).
 
 call(Pid, Fun, Args) ->
     gen_server:call(Pid, {call, Fun, Args}).
