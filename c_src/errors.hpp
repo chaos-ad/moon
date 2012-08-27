@@ -12,6 +12,11 @@ struct enomem : public std::runtime_error
     enomem() : std::runtime_error("enomem") {}
 };
 
+struct unsupported_type : public std::runtime_error
+{
+    unsupported_type() : std::runtime_error("unsupported_type") {}
+};
+
 struct invalid_type : public std::runtime_error
 {
     invalid_type() : std::runtime_error("invalid_type") {}

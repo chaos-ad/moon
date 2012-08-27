@@ -1,51 +1,9 @@
 #include "lua.hpp"
 #include "utils.hpp"
 #include "errors.hpp"
+#include "lua_utils.hpp"
 
 namespace lua {
-
-/////////////////////////////////////////////////////////////////////////////
-
-class quit_tag {};
-
-/////////////////////////////////////////////////////////////////////////////
-
-class stack_guard_t
-{
-public :
-    stack_guard_t(vm_t & vm)
-        : vm_(vm)
-        , top_(lua_gettop(vm_.state()))
-    {};
-    ~stack_guard_t()
-    {
-        lua_settop(vm_.state(), top_);
-    }
-private :
-    vm_t & vm_;
-    int top_;
-};
-
-/////////////////////////////////////////////////////////////////////////////
-
-template <class worker_t>
-typename worker_t::result_type
-perform_task(vm_t & vm)
-{
-    vm_t::task_t task = vm.get_task();
-    worker_t worker(vm);
-    return boost::apply_visitor(worker, task);
-}
-
-template <class result_t>
-void send_result(vm_t & vm, std::string const& type, result_t const& result)
-{
-    boost::shared_ptr<ErlNifEnv> env(enif_alloc_env(), enif_free_env);
-    erlcpp::tuple_t packet(2);
-    packet[0] = erlcpp::atom_t(type);
-    packet[1] = result;
-    enif_send(NULL, vm.erl_pid().ptr(), env.get(), erlcpp::to_erl(env.get(), packet));
-}
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -139,7 +97,11 @@ struct call_handler : public base_handler<void>
         enif_fprintf(stderr, "*** call task: %s\n", call.fun.c_str());
 
         lua_getglobal(vm().state(), call.fun.c_str());
-        if (lua_pcall(vm().state(), 0, LUA_MULTRET, 0))
+
+        push_args_t push_args(vm());
+        std::for_each(call.args.begin(), call.args.end(), boost::apply_visitor(push_args));
+
+        if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0))
         {
             enif_fprintf(stderr, "*** call failed: %s\n", lua_tostring(vm().state(), -1));
             erlcpp::tuple_t result(2);
@@ -241,5 +203,7 @@ void* vm_t::thread_run(void * vm)
     static_cast<vm_t*>(vm)->run();
     return 0;
 }
+
+/////////////////////////////////////////////////////////////////////////////
 
 }
