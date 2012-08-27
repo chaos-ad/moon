@@ -28,6 +28,10 @@ distclean: clean
 start:
 	exec erl -pa ebin deps/*/ebin -boot start_sasl -s $(APP)
 
+teststart:
+	exec erl -pa ebin deps/*/ebin -boot start_sasl -s $(APP) \
+		-eval "{ok,X} = moon:start_vm(), register(vm, X)".
+
 test:
 	mkdir -p .eunit
 	$(REBAR) eunit skip_deps=true -v || true
