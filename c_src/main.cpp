@@ -44,7 +44,8 @@ static ERL_NIF_TERM start(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[])
 {
     try
     {
-        if (argc < 1) {
+        if (argc < 1)
+        {
             return enif_make_badarg(env);
         }
 
@@ -59,16 +60,72 @@ static ERL_NIF_TERM start(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[])
     }
 }
 
-static ERL_NIF_TERM call(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+static ERL_NIF_TERM load(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
     try
     {
-        if (argc < 3) {
+        if (argc < 2)
+        {
             return enif_make_badarg(env);
         }
 
         lua::vm_t * vm = NULL;
-        if(!enif_get_resource(env, argv[0], res_type, reinterpret_cast<void**>(&vm))) {
+        if(!enif_get_resource(env, argv[0], res_type, reinterpret_cast<void**>(&vm)))
+        {
+            return enif_make_badarg(env);
+        }
+
+        binary_t file = from_erl<binary_t>(env, argv[1]);
+        lua::vm_t::tasks::load_t load(file);
+        vm->add_task(lua::vm_t::task_t(load));
+
+        return atoms.ok;
+    }
+    catch( std::exception & ex )
+    {
+        return enif_make_tuple2(env, atoms.error, enif_make_atom(env, ex.what()));
+    }
+}
+
+static ERL_NIF_TERM eval(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+    try
+    {
+        if (argc < 2)
+        {
+            return enif_make_badarg(env);
+        }
+
+        lua::vm_t * vm = NULL;
+        if(!enif_get_resource(env, argv[0], res_type, reinterpret_cast<void**>(&vm)))
+        {
+            return enif_make_badarg(env);
+        }
+
+        binary_t script = from_erl<binary_t>(env, argv[1]);
+        lua::vm_t::tasks::eval_t eval(script);
+        vm->add_task(lua::vm_t::task_t(eval));
+
+        return atoms.ok;
+    }
+    catch( std::exception & ex )
+    {
+        return enif_make_tuple2(env, atoms.error, enif_make_atom(env, ex.what()));
+    }
+}
+
+static ERL_NIF_TERM call(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+    try
+    {
+        if (argc < 3)
+        {
+            return enif_make_badarg(env);
+        }
+
+        lua::vm_t * vm = NULL;
+        if(!enif_get_resource(env, argv[0], res_type, reinterpret_cast<void**>(&vm)))
+        {
             return enif_make_badarg(env);
         }
 
@@ -114,6 +171,8 @@ static ERL_NIF_TERM result(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
 static ErlNifFunc nif_funcs[] = {
     {"start", 1, start},
+    {"load", 2, load},
+    {"eval", 2, eval},
     {"call", 3, call},
     {"result", 2, result}
 };

@@ -60,6 +60,7 @@ public :
     typedef std::vector<char> data_t;
     binary_t() {};
     binary_t(data_t const& val) : data_t(val) {};
+    explicit binary_t(std::string const& val) : data_t(val.begin(), val.end()) {};
 };
 
 class list_t : public std::list<term_t>

@@ -1,11 +1,17 @@
 -module(moon_nif).
 
--export([start/1, call/3, result/2]).
+-export([start/1, load/2, eval/2, call/3, result/2]).
 -on_load(init/0).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 start(_) ->
+    exit(nif_library_not_loaded).
+
+load(_, _) ->
+    exit(nif_library_not_loaded).
+
+eval(_, _) ->
     exit(nif_library_not_loaded).
 
 call(_, _, _) ->

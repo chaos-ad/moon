@@ -20,6 +20,20 @@ private:
 public :
     struct tasks
     {
+        struct load_t
+        {
+            load_t(erlcpp::binary_t const& file)
+                : file(file)
+            {}
+            erlcpp::binary_t file;
+        };
+        struct eval_t
+        {
+            eval_t(erlcpp::binary_t const& code)
+                : code(code)
+            {}
+            erlcpp::binary_t code;
+        };
         struct call_t
         {
             call_t(erlcpp::atom_t const& fun, erlcpp::list_t const& args)
@@ -35,7 +49,14 @@ public :
         };
         struct quit_t {};
     };
-    typedef boost::variant<tasks::call_t, tasks::resp_t, tasks::quit_t> task_t;
+    typedef boost::variant
+    <
+        tasks::load_t,
+        tasks::eval_t,
+        tasks::call_t,
+        tasks::resp_t,
+        tasks::quit_t
+    > task_t;
 
 public :
 
@@ -44,14 +65,17 @@ public :
     void add_task(task_t const& task);
     task_t get_task();
 
+    lua_State* state();
+    lua_State const * state() const;
+
     static void destroy(ErlNifEnv* env, void* obj);
     static boost::shared_ptr<vm_t> create(ErlNifResourceType* res_type, erlcpp::lpid_t const& pid);
 
 private :
-    erlcpp::lpid_t      pid_;
-    ErlNifTid           tid_;
-    lua_State       *   luastate_;
-    queue<task_t>       queue_;
+    erlcpp::lpid_t               pid_;
+    ErlNifTid                    tid_;
+    boost::shared_ptr<lua_State> luastate_;
+    queue<task_t>                queue_;
 };
 
 }

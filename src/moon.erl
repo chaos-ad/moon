@@ -1,7 +1,11 @@
 -module(moon).
 
 -export([start/0, stop/0]).
--export([start_vm/0, stop_vm/1, call/3, call/4]).
+-export([start_vm/0, stop_vm/1]).
+
+-export([load/2, load/3]).
+-export([eval/2, eval/3]).
+-export([call/3, call/4]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -36,6 +40,24 @@ start_vm() ->
 
 stop_vm(Pid) ->
     moon_sup:stop_child(Pid).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+load(Pid, File) ->
+    load(Pid, File, infinity).
+
+load(Pid, File, Timeout) ->
+    moon_vm:load(Pid, File, Timeout).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+eval(Pid, Code) ->
+    eval(Pid, Code, infinity).
+
+eval(Pid, Code, Timeout) ->
+    moon_vm:eval(Pid, Code, Timeout).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 call(Pid, Fun, Args) ->
     call(Pid, Fun, Args, infinity).
