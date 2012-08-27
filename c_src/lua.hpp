@@ -42,6 +42,7 @@ public :
     erlcpp::lpid_t erl_pid() const { return pid_; }
 
     void add_task(task_t const& task);
+    task_t get_task();
 
     static void destroy(ErlNifEnv* env, void* obj);
     static boost::shared_ptr<vm_t> create(ErlNifResourceType* res_type, erlcpp::lpid_t const& pid);

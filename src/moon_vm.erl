@@ -7,7 +7,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 %% api:
--export([start_link/0, start_link/1, call/3]).
+-export([start_link/0, start_link/1, call/4]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -17,8 +17,8 @@ start_link() ->
 start_link(Name) when is_atom(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [], []).
 
-call(Pid, Fun, Args) ->
-    gen_server:call(Pid, {call, Fun, Args}).
+call(Pid, Fun, Args, Timeout) ->
+    gen_server:call(Pid, {call, Fun, Args}, Timeout).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -49,7 +49,7 @@ receive_response(VM) ->
         {moon_response, Response} ->
             Response;
         {moon_callback, {M, F, A}} ->
-            moon_nif:callback_result(VM, catch erlang:apply(M,F,A)),
+            moon_nif:result(VM, catch erlang:apply(M,F,A)),
             receive_response(VM);
         Other ->
             error({invalid_response, Other})

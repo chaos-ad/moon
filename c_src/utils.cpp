@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "errors.hpp"
 
 #include <erl_nif.h>
 #include <algorithm>
@@ -73,11 +74,16 @@ list_t from_erl<list_t>(ErlNifEnv* env, ERL_NIF_TERM term)
     ERL_NIF_TERM tail = term;
     while(!enif_is_empty_list(env, tail))
     {
-        if (!enif_get_list_cell(env, tail, &head, &tail))
+        if (enif_get_list_cell(env, tail, &head, &tail))
         {
-            throw errors::invalid_type("invalid_list");
+            result.push_back( from_erl<term_t>(env, head) );
         }
-        result.push_back( from_erl<term_t>(env, head) );
+        else
+        {
+            // Handle improper lists:
+            result.push_back( from_erl<term_t>(env, tail) );
+            break;
+        }
     }
     return result;
 }
