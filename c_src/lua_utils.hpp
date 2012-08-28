@@ -115,6 +115,8 @@ private :
     vm_t & vm_;
 };
 
+void print_stack(vm_t & vm);
+
 erlcpp::term_t pop_result(vm_t & vm, int index)
 {
     switch( lua_type(vm.state(), index) )
@@ -140,8 +142,26 @@ erlcpp::term_t pop_result(vm_t & vm, int index)
             return erlcpp::binary_t(erlcpp::binary_t::data_t(val, val+len));
         }
         case LUA_TTABLE:
-            // TODO: pop the table properly!
-            throw errors::unsupported_type("fuckin_table");
+        {
+            print_stack(vm);
+            erlcpp::list_t result;
+            lua_pushnil(vm.state());
+            print_stack(vm);
+            while(lua_next(vm.state(), index-1))
+            {
+                print_stack(vm);
+                erlcpp::term_t key = pop_result(vm, -2);
+                erlcpp::term_t val = pop_result(vm, -1);
+                erlcpp::tuple_t pair(2);
+                pair[0] = key;
+                pair[1] = val;
+                result.push_back(pair);
+                lua_pop(vm.state(), 1);
+            }
+            lua_pop(vm.state(), 1);
+            print_stack(vm);
+            return result;
+        }
         default :
             throw errors::unsupported_type(lua_typename(vm.state(), index));
     }
@@ -162,6 +182,19 @@ erlcpp::term_t pop_results(vm_t & vm, int args)
         }
         return result;
     }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void print_stack(vm_t & vm)
+{
+    enif_fprintf(stderr, "*** stack ***\n");
+    int top = lua_gettop(vm.state());
+    for(int i = 1; i <= top; ++i)
+    {
+        enif_fprintf(stderr, "*** [%d] = %s\n", i, lua_typename(vm.state(), i));
+    }
+    enif_fprintf(stderr, "*************\n\n");
 }
 
 /////////////////////////////////////////////////////////////////////////////
