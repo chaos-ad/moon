@@ -47,20 +47,30 @@ struct call_handler : public base_handler<void>
     call_handler(vm_t & vm) : base_handler(vm) {};
 
     // Loading file:
-    virtual void operator()(vm_t::tasks::load_t const& load)
+    void operator()(vm_t::tasks::load_t const& load)
     {
         stack_guard_t guard(vm());
-        std::string file(load.file.data(), load.file.data() + load.file.size());
-        if (luaL_dofile(vm().state(), file.c_str()))
+        try
+        {
+            std::string file(load.file.data(), load.file.data() + load.file.size());
+            if (luaL_dofile(vm().state(), file.c_str()))
+            {
+                erlcpp::tuple_t result(2);
+                result[0] = erlcpp::atom_t("error");
+                result[1] = erlcpp::binary_t(lua_tostring(vm().state(), -1));
+                send_result(vm(), "moon_response", result);
+            }
+            else
+            {
+                erlcpp::atom_t result("ok");
+                send_result(vm(), "moon_response", result);
+            }
+        }
+        catch( std::exception & ex )
         {
             erlcpp::tuple_t result(2);
             result[0] = erlcpp::atom_t("error");
-            result[1] = erlcpp::binary_t(lua_tostring(vm().state(), -1));
-            send_result(vm(), "moon_response", result);
-        }
-        else
-        {
-            erlcpp::atom_t result("ok");
+            result[1] = erlcpp::atom_t(ex.what());
             send_result(vm(), "moon_response", result);
         }
     }
@@ -69,23 +79,31 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::eval_t const& eval)
     {
         stack_guard_t guard(vm());
-        std::string code(eval.code.data(), eval.code.data() + eval.code.size());
-        enif_fprintf(stderr, "*** eval task: %s\n", code.c_str());
-
-        if ( luaL_loadbuffer(vm().state(), eval.code.data(), eval.code.size(), "line") ||
-                   lua_pcall(vm().state(), 0, LUA_MULTRET, 0) )
+        try
         {
-            enif_fprintf(stderr, "*** evaluation failed: %s\n", lua_tostring(vm().state(), -1));
+            int level = lua_gettop(vm().state());
+
+            if ( luaL_loadbuffer(vm().state(), eval.code.data(), eval.code.size(), "line") ||
+                    lua_pcall(vm().state(), 0, LUA_MULTRET, 0) )
+            {
+                erlcpp::tuple_t result(2);
+                result[0] = erlcpp::atom_t("error");
+                result[1] = erlcpp::binary_t(lua_tostring(vm().state(), -1));
+                send_result(vm(), "moon_response", result);
+            }
+            else
+            {
+                erlcpp::tuple_t result(2);
+                result[0] = erlcpp::atom_t("ok");
+                result[1] = pop_results(vm(), lua_gettop(vm().state()) - level);
+                send_result(vm(), "moon_response", result);
+            }
+        }
+        catch( std::exception & ex )
+        {
             erlcpp::tuple_t result(2);
             result[0] = erlcpp::atom_t("error");
-            result[1] = erlcpp::binary_t(lua_tostring(vm().state(), -1));
-            send_result(vm(), "moon_response", result);
-        }
-        else
-        {
-            int top = lua_gettop(vm().state());
-            enif_fprintf(stderr, "*** evaluating %s: new stack top: %d\n", code.c_str(), top);
-            erlcpp::atom_t result("ok");
+            result[1] = erlcpp::atom_t(ex.what());
             send_result(vm(), "moon_response", result);
         }
     }
@@ -94,26 +112,34 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::call_t const& call)
     {
         stack_guard_t guard(vm());
-        enif_fprintf(stderr, "*** call task: %s\n", call.fun.c_str());
-
-        lua_getglobal(vm().state(), call.fun.c_str());
-
-        push_args_t push_args(vm());
-        std::for_each(call.args.begin(), call.args.end(), boost::apply_visitor(push_args));
-
-        if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0))
+        try
         {
-            enif_fprintf(stderr, "*** call failed: %s\n", lua_tostring(vm().state(), -1));
+            int level = lua_gettop(vm().state());
+            lua_getglobal(vm().state(), call.fun.c_str());
+
+            push_args_t push_args(vm());
+            std::for_each(call.args.begin(), call.args.end(), boost::apply_visitor(push_args));
+
+            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0))
+            {
+                erlcpp::tuple_t result(2);
+                result[0] = erlcpp::atom_t("error");
+                result[1] = erlcpp::binary_t(lua_tostring(vm().state(), -1));
+                send_result(vm(), "moon_response", result);
+            }
+            else
+            {
+                erlcpp::tuple_t result(2);
+                result[0] = erlcpp::atom_t("ok");
+                result[1] = pop_results(vm(), lua_gettop(vm().state()) - level);
+                send_result(vm(), "moon_response", result);
+            }
+        }
+        catch( std::exception & ex )
+        {
             erlcpp::tuple_t result(2);
             result[0] = erlcpp::atom_t("error");
-            result[1] = erlcpp::binary_t(lua_tostring(vm().state(), -1));
-            send_result(vm(), "moon_response", result);
-        }
-        else
-        {
-            int top = lua_gettop(vm().state());
-            enif_fprintf(stderr, "*** calling %s: new stack top: %d\n", call.fun.c_str(), top);
-            erlcpp::atom_t result("ok");
+            result[1] = erlcpp::atom_t(ex.what());
             send_result(vm(), "moon_response", result);
         }
     }
@@ -125,13 +151,13 @@ vm_t::vm_t(erlcpp::lpid_t const& pid)
     : pid_(pid)
     , luastate_(::luaL_newstate(), ::lua_close)
 {
-    ::luaL_openlibs(luastate_.get()),
-    enif_fprintf(stderr, "*** construct the vm\n");
+    ::luaL_openlibs(luastate_.get());
+//     enif_fprintf(stderr, "*** construct the vm\n");
 }
 
 vm_t::~vm_t()
 {
-    enif_fprintf(stderr, "*** destruct the vm\n");
+//     enif_fprintf(stderr, "*** destruct the vm\n");
 }
 
 /////////////////////////////////////////////////////////////////////////////

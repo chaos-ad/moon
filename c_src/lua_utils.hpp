@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lua.hpp"
+#include "errors.hpp"
 
 namespace lua {
 
@@ -113,6 +114,55 @@ public :
 private :
     vm_t & vm_;
 };
+
+erlcpp::term_t pop_result(vm_t & vm, int index)
+{
+    switch( lua_type(vm.state(), index) )
+    {
+        case LUA_TNIL:
+            return erlcpp::atom_t("nil");
+        case LUA_TBOOLEAN:
+            return erlcpp::atom_t(lua_toboolean(vm.state(), index) ? "true" : "false");
+        case LUA_TNUMBER:
+        {
+            lua_Number  d = lua_tonumber(vm.state(), index);
+            lua_Integer i = lua_tointeger(vm.state(), index);
+            if (d != i) {
+                return erlcpp::num_t(d);
+            } else {
+                return erlcpp::num_t(i);
+            }
+        }
+        case LUA_TSTRING:
+        {
+            std::size_t len = 0;
+            const char * val = lua_tolstring(vm.state(), index, &len);
+            return erlcpp::binary_t(erlcpp::binary_t::data_t(val, val+len));
+        }
+        case LUA_TTABLE:
+            // TODO: pop the table properly!
+            throw errors::unsupported_type("fuckin_table");
+        default :
+            throw errors::unsupported_type(lua_typename(vm.state(), index));
+    }
+}
+
+erlcpp::term_t pop_results(vm_t & vm, int args)
+{
+    if (args == 1)
+    {
+        return pop_result(vm, args);
+    }
+    else
+    {
+        erlcpp::tuple_t result(args);
+        for( int idx = 0; idx < args; ++idx )
+        {
+            result[idx] = pop_result(vm, -(args-idx));
+        }
+        return result;
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
