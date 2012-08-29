@@ -78,10 +78,16 @@ private :
 
 /////////////////////////////////////////////////////////////////////////////
 
-void push(lua_State * vm, erlcpp::list_t const& args)
+void push(lua_State * vm, erlcpp::term_t const& val)
 {
-    push_t pusher(vm); // (-;
-    std::for_each(args.begin(), args.end(), boost::apply_visitor(pusher));
+    push_t p(vm);
+    boost::apply_visitor(p, val);
+}
+
+void push_all(lua_State * vm, erlcpp::list_t const& list)
+{
+    push_t p(vm);
+    std::for_each(list.begin(), list.end(), boost::apply_visitor(p));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -138,20 +144,21 @@ erlcpp::term_t pop(lua_State * vm)
     return result;
 }
 
-erlcpp::term_t pop(lua_State * vm, std::size_t args)
+erlcpp::term_t pop_all(lua_State * vm)
 {
-    if (args == 1)
+    switch(int N = lua_gettop(vm))
     {
-        return pop(vm);
-    }
-    else
-    {
-        erlcpp::tuple_t result(args);
-        while(args)
+        case 0 : return erlcpp::atom_t("undefined");
+        case 1 : return pop(vm);
+        default:
         {
-            result[--args] = pop(vm);
+            erlcpp::tuple_t result(N);
+            while(N)
+            {
+                result[--N] = pop(vm);
+            }
+            return result;
         }
-        return result;
     }
 }
 

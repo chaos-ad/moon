@@ -45,12 +45,10 @@ private :
 namespace stack
 {
     erlcpp::term_t pop(lua_State * vm);
-    erlcpp::term_t pop(lua_State * vm, std::size_t num);
-    void push(lua_State * vm, erlcpp::list_t const& args);
+    erlcpp::term_t pop_all(lua_State * vm);
 
-    inline erlcpp::term_t pop(vm_t & vm) { return pop(vm.state()); }
-    inline erlcpp::term_t pop(vm_t & vm, std::size_t num) { return pop(vm.state(), num); }
-    inline void push(vm_t & vm, erlcpp::list_t const& args) { return push(vm.state(), args); }
+    void push(lua_State * vm, erlcpp::term_t const& val);
+    void push_all(lua_State * vm, erlcpp::list_t const& list);
 }
 
 /////////////////////////////////////////////////////////////////////////////
