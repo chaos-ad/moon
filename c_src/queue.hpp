@@ -4,6 +4,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
+// TODO: replace the queue with native ErlNifMutex and ErlNifCond
 template<typename data_t>
 class queue
 {

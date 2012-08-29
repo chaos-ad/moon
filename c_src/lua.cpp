@@ -148,10 +148,9 @@ struct call_handler : public base_handler<void>
 
 vm_t::vm_t(erlcpp::lpid_t const& pid)
     : pid_(pid)
-    , luastate_(::luaL_newstate(), ::lua_close)
+    , luastate_(luaL_newstate(), lua_close)
 {
-    ::luaL_openlibs(luastate_.get());
-//     enif_fprintf(stderr, "*** construct the vm\n");
+    luaL_openlibs(luastate_.get());
 }
 
 vm_t::~vm_t()
