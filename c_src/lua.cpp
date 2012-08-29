@@ -95,7 +95,7 @@ struct call_handler : public base_handler<void>
             {
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("ok");
-                result[1] = pop_results(vm(), lua_gettop(vm().state()) - level);
+                result[1] = lua::stack::pop(vm(), lua_gettop(vm().state()) - level);
                 send_result(vm(), "moon_response", result);
             }
         }
@@ -114,17 +114,11 @@ struct call_handler : public base_handler<void>
         stack_guard_t guard(vm());
         try
         {
-            print_stack(vm());
-
             int level = lua_gettop(vm().state());
             lua_getglobal(vm().state(), call.fun.c_str());
 
-            print_stack(vm());
+            lua::stack::push(vm(), call.args);
 
-            push_args_t push_args(vm());
-            std::for_each(call.args.begin(), call.args.end(), boost::apply_visitor(push_args));
-
-            print_stack(vm());
             if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0))
             {
                 erlcpp::tuple_t result(2);
@@ -134,12 +128,9 @@ struct call_handler : public base_handler<void>
             }
             else
             {
-                print_stack(vm());
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("ok");
-                print_stack(vm());
-                int resnum = lua_gettop(vm().state()) - level;
-                result[1] = pop_results(vm(), resnum);
+                result[1] = lua::stack::pop(vm(), lua_gettop(vm().state()) - level);
                 send_result(vm(), "moon_response", result);
             }
         }
