@@ -33,11 +33,27 @@ class quit_tag {};
 class stack_guard_t
 {
 public :
-    stack_guard_t(vm_t & vm) : vm_(vm), top_(lua_gettop(vm_.state())) {};
-    ~stack_guard_t() { lua_settop(vm_.state(), top_); }
+    stack_guard_t(vm_t & vm)
+        : vm_(vm)
+        , top_(lua_gettop(vm_.state()))
+        , dismissed_(false)
+    {};
+
+    ~stack_guard_t()
+    {
+        if(!dismissed_) {
+            lua_settop(vm_.state(), top_);
+        }
+    }
+
+    void dismiss() // nothrow
+    {
+        dismissed_ = true;
+    }
 private :
     vm_t & vm_;
     int top_;
+    bool dismissed_;
 };
 
 /////////////////////////////////////////////////////////////////////////////

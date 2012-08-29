@@ -7,6 +7,8 @@
 -export([eval/2, eval/3]).
 -export([call/3, call/4]).
 
+-export([test/1]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 start() ->
@@ -66,3 +68,7 @@ call(Pid, Fun, Args, Timeout) ->
     moon_vm:call(Pid, Fun, Args, Timeout).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+test(Args) ->
+    io:format("Callback hit the erlang! Args = ~p~n", [Args]),
+    {ok, {tha_tuple, <<"binary">>, [{<<"key">>,<<"value">>}]}, []}.

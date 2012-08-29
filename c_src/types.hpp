@@ -51,7 +51,8 @@ class atom_t : public std::string
 public :
     typedef std::string data_t;
     atom_t() {};
-    atom_t(data_t const& str) : data_t(str) {};
+    explicit atom_t(char   const* str) : data_t(str) {};
+    explicit atom_t(data_t const& str) : data_t(str) {};
 };
 
 class binary_t : public std::vector<char>
@@ -59,7 +60,7 @@ class binary_t : public std::vector<char>
 public :
     typedef std::vector<char> data_t;
     binary_t() {};
-    binary_t(data_t const& val) : data_t(val) {};
+    explicit binary_t(data_t const& val) : data_t(val) {};
     explicit binary_t(std::string const& val) : data_t(val.begin(), val.end()) {};
 };
 
@@ -68,7 +69,7 @@ class list_t : public std::list<term_t>
 public :
     typedef std::list<term_t> data_t;
     list_t() {};
-    list_t(data_t const& val) : data_t(val) {};
+    explicit list_t(data_t const& val) : data_t(val) {};
 };
 
 class tuple_t : public std::vector<term_t>
@@ -76,7 +77,7 @@ class tuple_t : public std::vector<term_t>
 public :
     typedef std::vector<term_t> data_t;
     tuple_t() {};
-    tuple_t(data_t const& val) : data_t(val) {};
+    explicit tuple_t(data_t const& val) : data_t(val) {};
     explicit tuple_t(data_t::size_type sz) : data_t(sz) {};
 };
 

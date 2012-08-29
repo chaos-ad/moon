@@ -134,7 +134,7 @@ term_t from_erl<term_t>(ErlNifEnv* env, ERL_NIF_TERM term)
     {
         return term_t(from_erl<tuple_t>(env, term));
     }
-    throw errors::invalid_type("unsupported_type");
+    throw errors::unsupported_type();
 }
 
 /////////////////////////////////////////////////////////////////////////////

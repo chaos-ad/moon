@@ -63,8 +63,18 @@ receive_response(VM) ->
     receive
         {moon_response, Response} ->
             Response;
-        {moon_callback, {M, F, A}} ->
-            moon_nif:result(VM, catch erlang:apply(M,F,A)),
+        {moon_callback, {M,F,A}} ->
+            try erlang:apply(to_atom(M),to_atom(F),A) of
+                Result ->
+                    moon_nif:result(VM, Result),
+                    receive_response(VM)
+            catch
+                _:Error ->
+                    moon_nif:result(VM, {error, Error}),
+                    receive_response(VM)
+            end;
+        {moon_callback, _} ->
+            moon_nif:result(VM, {error, invalid_call}),
             receive_response(VM);
         Other ->
             error({invalid_response, Other})

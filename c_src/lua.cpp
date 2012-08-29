@@ -142,12 +142,65 @@ struct call_handler : public base_handler<void>
 };
 
 /////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+int erlang_call(vm_t & vm)
+{
+    bool exception_caught = false; // because lua_error makes longjump
+    try
+    {
+        stack_guard_t guard(vm);
+
+        erlcpp::term_t args = lua::stack::pop_all(vm.state());
+
+        send_result(vm, "moon_callback", args);
+        erlcpp::term_t result = perform_task<result_handler>(vm);
+
+        lua::stack::push(vm.state(), result);
+
+        guard.dismiss();
+        return 1;
+    }
+    catch(std::exception & ex)
+    {
+        lua::stack::push(vm.state(), erlcpp::atom_t(ex.what()));
+        exception_caught = true;
+    }
+
+    if (exception_caught) {
+        lua_error(vm.state());
+    }
+
+    return 0;
+}
+
+extern "C"
+{
+    static int erlang_call(lua_State * vm)
+    {
+        int index = lua_upvalueindex(1);
+        assert(lua_islightuserdata(vm, index));
+        void * data = lua_touserdata(vm, index);
+        assert(data);
+        return erlang_call(*static_cast<vm_t*>(data));
+    }
+    
+    static const struct luaL_Reg erlang_lib[] =
+    {
+        {"call", erlang_call},
+        {NULL, NULL}
+    };
+}
 
 vm_t::vm_t(erlcpp::lpid_t const& pid)
     : pid_(pid)
     , luastate_(luaL_newstate(), lua_close)
 {
     luaL_openlibs(luastate_.get());
+    lua_newtable(luastate_.get());
+    lua_pushlightuserdata(luastate_.get(), this);
+    luaL_setfuncs(luastate_.get(), erlang_lib, 1);
+    lua_setglobal(luastate_.get(), "erlang");
 }
 
 vm_t::~vm_t()
