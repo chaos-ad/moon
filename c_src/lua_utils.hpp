@@ -158,7 +158,6 @@ erlcpp::term_t pop_result(vm_t & vm, int index)
                 result.push_back(pair);
                 lua_pop(vm.state(), 1);
             }
-            lua_pop(vm.state(), 1);
             print_stack(vm);
             return result;
         }
@@ -192,7 +191,8 @@ void print_stack(vm_t & vm)
     int top = lua_gettop(vm.state());
     for(int i = 1; i <= top; ++i)
     {
-        enif_fprintf(stderr, "*** [%d] = %s\n", i, lua_typename(vm.state(), i));
+        int type = lua_type(vm.state(), i);
+        enif_fprintf(stderr, "*** [%d] = %s\n", i, lua_typename(vm.state(), type));
     }
     enif_fprintf(stderr, "*************\n\n");
 }
