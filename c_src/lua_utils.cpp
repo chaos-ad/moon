@@ -48,15 +48,22 @@ public :
         erlcpp::list_t::const_iterator i, end = value.end();
         for( i = value.begin(); i != end; ++i )
         {
-            erlcpp::tuple_t tuple = boost::get<erlcpp::tuple_t>(*i);
-            if (tuple.size() != 2)
+            try
+            {
+                erlcpp::tuple_t tuple = boost::get<erlcpp::tuple_t>(*i);
+                if (tuple.size() != 2)
+                {
+                    throw errors::unsupported_type();
+                }
+                self_t & self = *this;
+                boost::apply_visitor(self, tuple[0]);
+                boost::apply_visitor(self, tuple[1]);
+                lua_settable(vm_, -3);
+            }
+            catch(boost::bad_get&)
             {
                 throw errors::unsupported_type();
             }
-            self_t & self = *this;
-            boost::apply_visitor(self, tuple[0]);
-            boost::apply_visitor(self, tuple[1]);
-            lua_settable(vm_, -3);
         }
     }
 
