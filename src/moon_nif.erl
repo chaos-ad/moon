@@ -24,15 +24,19 @@ result(_, _) ->
 %% local functions:
 
 init() ->
-    SoName = case code:priv_dir(?MODULE) of
-        {error, bad_name} ->
-            case filelib:is_dir(filename:join(["..", priv])) of
-                true ->
-                    filename:join(["..", priv, ?MODULE]);
-                _ ->
-                    filename:join([priv, ?MODULE])
-            end;
-        Dir ->
-            filename:join(Dir, ?MODULE)
-    end,
+    SoName = filename:join(priv_dir_path(moon), ?MODULE),
     ok = erlang:load_nif(filename:absname(SoName), 0).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+priv_dir_path(App) ->
+    case code:priv_dir(App) of
+        {error, bad_name} -> priv_dir_mod(App);
+        Dir -> Dir
+    end.
+
+priv_dir_mod(Mod) ->
+    case code:which(Mod) of
+        File when not is_list(File) -> "../priv";
+        File -> filename:join([filename:dirname(File),"../priv"])
+    end.
