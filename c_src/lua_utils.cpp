@@ -45,7 +45,7 @@ public :
     void operator()(erlcpp::list_t const& value)
     {
         lua_createtable(vm_, value.size(), 0);
-        int32_t index = 0;
+        int32_t index = 1;
         erlcpp::list_t::const_iterator i, end = value.end();
         for( i = value.begin(); i != end; ++i )
         {
@@ -64,7 +64,7 @@ public :
             catch(boost::bad_get&)
             {
                 self_t & self = *this;
-                lua_pushinteger(vm_, ++index);
+                lua_pushinteger(vm_, index++);
                 boost::apply_visitor(self, *i);
                 lua_settable(vm_, -3);
             }
@@ -77,7 +77,7 @@ public :
         for( erlcpp::tuple_t::size_type i = 0, end = value.size(); i != end; ++i )
         {
             self_t & self = *this;
-            lua_pushinteger(vm_, i);
+            lua_pushinteger(vm_, i+1);
             boost::apply_visitor(self, value[i]);
             lua_settable(vm_, -3);
         }
@@ -132,14 +132,31 @@ erlcpp::term_t peek(lua_State * vm)
         {
             erlcpp::list_t result;
             lua_pushnil(vm);
-            while(lua_next(vm, -2))
+            for(int32_t index = 1; lua_next(vm, -2); ++index)
             {
                 erlcpp::term_t val = pop(vm);
                 erlcpp::term_t key = peek(vm);
-                erlcpp::tuple_t pair(2);
-                pair[0] = key;
-                pair[1] = val;
-                result.push_back(pair);
+                try
+                {
+                    if (boost::get<LUA_INTEGER>(boost::get<erlcpp::num_t>(key)) == index)
+                    {
+                        result.push_back(val);
+                    }
+                    else
+                    {
+                        erlcpp::tuple_t pair(2);
+                        pair[0] = key;
+                        pair[1] = val;
+                        result.push_back(pair);
+                    }
+                }
+                catch(boost::bad_get&)
+                {
+                    erlcpp::tuple_t pair(2);
+                    pair[0] = key;
+                    pair[1] = val;
+                    result.push_back(pair);
+                }
             }
             return result;
         }
