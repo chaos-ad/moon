@@ -24,19 +24,16 @@ result(_, _) ->
 %% local functions:
 
 init() ->
-    SoName = filename:join(priv_dir_path(moon), ?MODULE),
+    SoName = filename:join(priv_dir(), ?MODULE),
     ok = erlang:load_nif(filename:absname(SoName), 0).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-priv_dir_path(App) ->
-    case code:priv_dir(App) of
-        {error, bad_name} -> priv_dir_mod(App);
-        Dir -> Dir
-    end.
-
-priv_dir_mod(Mod) ->
-    case code:which(Mod) of
-        File when not is_list(File) -> "../priv";
-        File -> filename:join([filename:dirname(File),"../priv"])
+priv_dir() ->
+    case code:priv_dir(gl_wrapper_lua) of
+        PrivDir when is_list(PrivDir) ->
+            PrivDir;
+        {error, bad_name} ->
+            Ebin = filename:dirname(code:which(?MODULE)),
+            filename:join(filename:dirname(Ebin), "priv")
     end.
