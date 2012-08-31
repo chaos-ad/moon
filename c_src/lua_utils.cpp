@@ -45,6 +45,7 @@ public :
     void operator()(erlcpp::list_t const& value)
     {
         lua_createtable(vm_, value.size(), 0);
+        int32_t index = 0;
         erlcpp::list_t::const_iterator i, end = value.end();
         for( i = value.begin(); i != end; ++i )
         {
@@ -53,7 +54,7 @@ public :
                 erlcpp::tuple_t tuple = boost::get<erlcpp::tuple_t>(*i);
                 if (tuple.size() != 2)
                 {
-                    throw errors::unsupported_type();
+                    throw boost::bad_get();
                 }
                 self_t & self = *this;
                 boost::apply_visitor(self, tuple[0]);
@@ -62,7 +63,10 @@ public :
             }
             catch(boost::bad_get&)
             {
-                throw errors::unsupported_type();
+                self_t & self = *this;
+                lua_pushinteger(vm_, ++index);
+                boost::apply_visitor(self, *i);
+                lua_settable(vm_, -3);
             }
         }
     }

@@ -184,7 +184,7 @@ extern "C"
         assert(data);
         return erlang_call(*static_cast<vm_t*>(data));
     }
-    
+
     static const struct luaL_Reg erlang_lib[] =
     {
         {"call", erlang_call},
