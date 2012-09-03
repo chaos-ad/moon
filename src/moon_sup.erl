@@ -3,7 +3,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--export([start_link/0, start_child/0, stop_child/1, init/1]).
+-export([start_link/0, start_child/1, stop_child/1, init/1]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -16,8 +16,8 @@
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
-start_child() ->
-    supervisor:start_child(?MODULE, []).
+start_child(Options) ->
+    supervisor:start_child(?MODULE, Options).
 
 stop_child(Pid) ->
     supervisor:terminate_child(?MODULE, Pid).

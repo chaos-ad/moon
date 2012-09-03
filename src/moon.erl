@@ -1,7 +1,7 @@
 -module(moon).
 
 -export([start/0, stop/0]).
--export([start_vm/0, stop_vm/1]).
+-export([start_vm/0, start_vm/1, stop_vm/1]).
 
 -export([load/2, load/3]).
 -export([eval/2, eval/3]).
@@ -38,7 +38,10 @@ start_ok(App, {error, Reason}) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 start_vm() ->
-    moon_sup:start_child().
+    start_vm([]).
+
+start_vm(Options) ->
+    moon_sup:start_child([Options]).
 
 stop_vm(Pid) ->
     moon_sup:stop_child(Pid).

@@ -7,16 +7,14 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 %% api:
--export([start_link/0, start_link/1]).
+-export([start_link/1]).
 -export([load/3, eval/3, call/4]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Public api:
 
-start_link() ->
-    gen_server:start_link(?MODULE, [], []).
-
-start_link(Name) when is_atom(Name) ->
-    gen_server:start_link({local, Name}, ?MODULE, [], []).
+start_link(Options) ->
+    gen_server:start_link(?MODULE, Options, []).
 
 load(Pid, File, Timeout) ->
     gen_server:call(Pid, {load, File}, Timeout).
@@ -28,22 +26,28 @@ call(Pid, Fun, Args, Timeout) ->
     gen_server:call(Pid, {call, Fun, Args}, Timeout).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Private api:
 
-init([]) ->
+-record(state, {vm, callback}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+init(Options) ->
+    Callback = proplists:get_value(callback, Options),
     {ok, VM} = moon_nif:start(self()),
-    {ok, VM}.
+    {ok, #state{vm=VM, callback=Callback}}.
 
-handle_call({load, File}, _, VM) ->
+handle_call({load, File}, _, State=#state{vm=VM}) ->
     ok = moon_nif:load(VM, to_binary(File)),
-    {reply, receive_response(VM), VM};
+    {reply, receive_response(State), State};
 
-handle_call({eval, Code}, _, VM) ->
+handle_call({eval, Code}, _, State=#state{vm=VM}) ->
     ok = moon_nif:eval(VM, to_binary(Code)),
-    {reply, receive_response(VM), VM};
+    {reply, receive_response(State), State};
 
-handle_call({call, Fun, Args}, _, VM) when is_list(Args) ->
+handle_call({call, Fun, Args}, _, State=#state{vm=VM}) when is_list(Args) ->
     ok = moon_nif:call(VM, to_atom(Fun), Args),
-    {reply, receive_response(VM), VM}.
+    {reply, receive_response(State), State}.
 
 handle_cast(_, State) ->
     {noreply, State}.
@@ -59,26 +63,42 @@ code_change(_, State, _) ->
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-receive_response(VM) ->
+receive_response(State=#state{vm=VM, callback=Callback}) ->
     receive
         {moon_response, Response} ->
             Response;
-        {moon_callback, {M,F,A}} ->
-            try erlang:apply(to_atom(M),to_atom(F),A) of
-                Result ->
-                    moon_nif:result(VM, [{error, false}, {result, Result}]),
-                    receive_response(VM)
-            catch
-                _:Error ->
-                    moon_nif:result(VM, [{error, true}, {result, Error}]),
-                    receive_response(VM)
-            end;
-        {moon_callback, _} ->
-            moon_nif:result(VM, [{error, true}, {result, invalid_call}]),
-            receive_response(VM);
+        {moon_callback, Args} ->
+            try
+                Result = handle_callback(Callback, Args),
+                moon_nif:result(VM, [{error, false}, {result, Result}])
+            catch _:Error ->
+                moon_nif:result(VM, [{error, true}, {result, Error}])
+            end,
+            receive_response(State);
         Other ->
             error({invalid_response, Other})
     end.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+handle_callback(undefined, {Mod, Fun, Args}) ->
+    erlang:apply(to_atom(Mod),to_atom(Fun),Args);
+
+handle_callback(Callback, Args) when is_function(Callback) ->
+    Callback(Args);
+
+handle_callback({Mod, Fun}, Args) when is_atom(Mod), is_atom(Fun) ->
+    erlang:apply(Mod, Fun, Args);
+
+handle_callback({Mod, Fun, Args0}, Args1)
+        when is_atom(Mod), is_atom(Fun)
+           , is_list(Args0), is_list(Args1) ->
+    erlang:apply(Mod, Fun, Args0 ++ Args1);
+
+handle_callback(_, _) ->
+    error(invalid_call).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 to_atom(Val) when is_atom(Val) -> Val;
 to_atom(Val) when is_list(Val) -> list_to_atom(Val);
