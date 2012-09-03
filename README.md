@@ -86,5 +86,5 @@ Dispatching and/or type mapping can be done here.
 </table>
 
 ## Todo:
-Get rid of libboost_thread dependency, and replace queue with just a mutex & condition variable
-Convert erlang strings to lua strings properly
+* Get rid of libboost_thread dependency, and replace queue with just a mutex & condition variable
+* Convert erlang strings to lua strings properly
