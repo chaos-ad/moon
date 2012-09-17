@@ -30,7 +30,7 @@ init() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 priv_dir() ->
-    case code:priv_dir(gl_wrapper_lua) of
+    case code:priv_dir(moon) of
         PrivDir when is_list(PrivDir) ->
             PrivDir;
         {error, bad_name} ->
