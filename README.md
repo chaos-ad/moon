@@ -4,12 +4,14 @@ Library for calling Lua from Erlang, and back.
 
 ## Dependencies:
 
-Parts of the boost library, somewhat close to 1.48
+Parts of the boost library, somewhat close to 1.48  
 Developement version of lua
 
 These libraries easily can be obtained on ubuntu by running this:
 
+`
 sudo apt-get install libboost1.48-all-dev liblua5.2-dev
+`
 
 ## General usage:
 
@@ -96,4 +98,5 @@ Dispatching and/or type mapping can be done here.
 
 ## Todo:
 * Get rid of libboost_thread dependency, and replace queue with just a mutex & condition variable
+* Embed header-only part of boost to the build
 * Convert erlang strings to lua strings properly
