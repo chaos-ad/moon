@@ -1,13 +1,12 @@
 %% -*- erlang -*-
-{application, moon,
- [
-  {description, ""},
-  {vsn, "1"},
-  {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
-  {mod, { moon_app, []}},
-  {env, []}
- ]}.
+{application, moon, [
+    {description, ""},
+    {vsn, git},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib
+    ]},
+    {mod, {moon_app, []}},
+    {env, []}
+]}.
