@@ -61,6 +61,16 @@ Dispatching and/or type mapping can be done here.
     <td></td>
   </tr>
   <tr>
+    <td>true</td>
+    <td>true</td>
+    <td>boolean in lua</td>
+  </tr>
+  <tr>
+    <td>false</td>
+    <td>false</td>
+    <td>boolean in lua</td>
+  </tr>
+  <tr>
     <td>atom</td>
     <td>"atom"</td>
     <td>string in lua</td>

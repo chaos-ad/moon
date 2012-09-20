@@ -34,7 +34,18 @@ public :
     }
     void operator()(erlcpp::atom_t const& value)
     {
-        lua_pushlstring(vm_, value.c_str(), value.size());
+        if (value == "true")
+        {
+            lua_pushboolean(vm_, 1);
+        }
+        else if (value == "false")
+        {
+            lua_pushboolean(vm_, 0);
+        }
+        else
+        {
+            lua_pushlstring(vm_, value.c_str(), value.size());
+        }
     }
 
     void operator()(erlcpp::binary_t const& value)

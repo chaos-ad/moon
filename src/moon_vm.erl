@@ -70,12 +70,12 @@ receive_response(State=#state{vm=VM, callback=Callback}) ->
         {moon_callback, Args} ->
             try
                 case handle_callback(Callback, Args) of
-                    {error, Result} -> moon_nif:result(VM, {[{error, true}, {result, Result}]});
-                    {ok, Result}    -> moon_nif:result(VM, {[{error, false}, {result, Result}]});
-                    Result          -> moon_nif:result(VM, {[{error, false}, {result, Result}]})
+                    {error, Result} -> moon_nif:result(VM, [{error, true}, {result, Result}]);
+                    {ok, Result}    -> moon_nif:result(VM, [{error, false}, {result, Result}]);
+                    Result          -> moon_nif:result(VM, [{error, false}, {result, Result}])
                 end
             catch _:Error ->
-                moon_nif:result(VM, {[{error, true}, {result, Error}]})
+                moon_nif:result(VM, [{error, true}, {result, Error}])
             end,
             receive_response(State)
     end.
