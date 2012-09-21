@@ -4,7 +4,7 @@ Library for calling Lua from Erlang, and back.
 
 ## Dependencies:
 
-Parts of the boost library, somewhat close to 1.48  
+Parts of the boost library, somewhat close to 1.48
 Developement version of lua
 
 These libraries easily can be obtained on ubuntu by running this:
@@ -53,14 +53,17 @@ Dispatching and/or type mapping can be done here.
   <tr>
     <th>Erlang</th>
     <th>Lua</th>
+    <th>Erlang</th>
     <th>Remarks</th>
   </tr>
   <tr>
-    <td>42</td>
-    <td>42</td>
-    <td></td>
+    <td>nil</td>
+    <td>nil</td>
+    <td>nil</td>
+    <td>nil in lua</td>
   </tr>
   <tr>
+    <td>true</td>
     <td>true</td>
     <td>true</td>
     <td>boolean in lua</td>
@@ -68,41 +71,61 @@ Dispatching and/or type mapping can be done here.
   <tr>
     <td>false</td>
     <td>false</td>
+    <td>false</td>
     <td>boolean in lua</td>
+  </tr>
+  <tr>
+    <td>42</td>
+    <td>42</td>
+    <td>42</td>
+    <td>number in lua</td>
+  </tr>
+  <tr>
+    <td>42.123</td>
+    <td>42.123</td>
+    <td>42.123</td>
+    <td>number in lua</td>
   </tr>
   <tr>
     <td>atom</td>
     <td>"atom"</td>
-    <td>string in lua</td>
+    <td><<"atom">></td>
+    <td>string in lua, binary, when comes back to erlang</td>
   </tr>
   <tr>
     <td>"string"</td>
-    <td>{'s', 't', 'r', 'i', 'n', 'g'}</td>
-    <td>table in lua, don't use it!</td>
+    <td>{115,116,114,105,110,103}</td>
+    <td>"string"</td>
+    <td>table with integers in lua, dont use it!</td>
   </tr>
   <tr>
     <td><<"binary">></td>
     <td>"binary"</td>
+    <td><<"binary">></td>
     <td>string in lua</td>
   </tr>
   <tr>
     <td>[]</td>
     <td>{}</td>
+    <td>[]</td>
     <td></td>
   </tr>
   <tr>
     <td>[10, 100, <<"abc">>]</td>
     <td>{10, 100, "abc"}</td>
+    <td>[10, 100, "abc"]</td>
     <td></td>
   </tr>
   <tr>
     <td>[{yet, value}, {another, value}]</td>
     <td>{yet="value", another="value"}</td>
+    <td>[{<<"another">>, <<"value">>}, {<<"yet">>, <<"value">>}]</td>
   </tr>
   <tr>
     <td>[{ugly, "mixed"}, list]</td>
     <td>{ugly="mixed", "list"}</td>
-    <td>list will be accessable at index [1], and "mixed" under the key "ugly"</td>
+    <td>[<<"list">>, {<<"ugly">>, <<"mixed">>}]</td>
+    <td>"list" will be accessable at index [1], and "mixed" - under the "ugly" key</td>
   </tr>
 </table>
 

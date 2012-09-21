@@ -42,6 +42,10 @@ public :
         {
             lua_pushboolean(vm_, 0);
         }
+        else if (value == "nil")
+        {
+            lua_pushnil(vm_);
+        }
         else
         {
             lua_pushlstring(vm_, value.c_str(), value.size());
