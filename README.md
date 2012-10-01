@@ -89,7 +89,7 @@ Dispatching and/or type mapping can be done here.
   <tr>
     <td>atom</td>
     <td>"atom"</td>
-    <td><<"atom">></td>
+    <td>&lt;&lt;"atom"&gt;&gt;</td>
     <td>string in lua, binary, when comes back to erlang</td>
   </tr>
   <tr>
@@ -99,9 +99,9 @@ Dispatching and/or type mapping can be done here.
     <td>table with integers in lua, dont use it!</td>
   </tr>
   <tr>
-    <td><<"binary">></td>
+    <td>&lt;&lt;"binary"&gt;&gt;</td>
     <td>"binary"</td>
-    <td><<"binary">></td>
+    <td>&lt;&lt;"binary"&gt;&gt;</td>
     <td>string in lua</td>
   </tr>
   <tr>
@@ -111,20 +111,20 @@ Dispatching and/or type mapping can be done here.
     <td></td>
   </tr>
   <tr>
-    <td>[10, 100, <<"abc">>]</td>
+    <td>[10, 100, &lt;&lt;"abc"&gt;&gt;]</td>
     <td>{10, 100, "abc"}</td>
-    <td>[10, 100, "abc"]</td>
+    <td>[10, 100, &lt;&lt;"abc"&gt;&gt;]</td>
     <td></td>
   </tr>
   <tr>
     <td>[{yet, value}, {another, value}]</td>
     <td>{yet="value", another="value"}</td>
-    <td>[{<<"another">>, <<"value">>}, {<<"yet">>, <<"value">>}]</td>
+    <td>[{&lt;&lt;"another"&gt;&gt;, &lt;&lt;"value"&gt;&gt;}, {&lt;&lt;"yet"&gt;&gt;, &lt;&lt;"value"&gt;&gt;}]</td>
   </tr>
   <tr>
     <td>[{ugly, "mixed"}, list]</td>
     <td>{ugly="mixed", "list"}</td>
-    <td>[<<"list">>, {<<"ugly">>, <<"mixed">>}]</td>
+    <td>[&lt;&lt;"list"&gt;&gt;, {&lt;&lt;"ugly"&gt;&gt;, &lt;&lt;"mixed"&gt;&gt;}]</td>
     <td>"list" will be accessable at index [1], and "mixed" - under the "ugly" key</td>
   </tr>
 </table>
