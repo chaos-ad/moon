@@ -4,7 +4,7 @@ Library for calling Lua from Erlang, and back.
 
 ## Dependencies:
 
-Parts of the boost library, somewhat close to 1.48
+Parts of the boost library, somewhat close to 1.48  
 Developement version of lua
 
 These libraries easily can be obtained on ubuntu by running this:
