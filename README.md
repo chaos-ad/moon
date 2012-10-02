@@ -36,8 +36,7 @@ This mode allows to invoke arbitrary function from lua with erlang.call(Module, 
     {ok, VM} = moon:start_vm().
     {ok, <<"ok">>} = moon:eval(VM, <<"return erlang.call(\"io\", \"format\", {\"Look ma, im calling! ~s~n\", {\"Yay\"}}).result">>).
 
-    Though, it is not very useful, since type mapping is far from done, and there is no way
-    to construct atoms or strings from lua.
+Though, it is not very useful, since type mapping is far from done, and there is no way to construct atoms or strings from lua.
 
 #### Restrictive mode
 This mode passes all calls to erlang.call from lua to a single callback.
@@ -49,85 +48,136 @@ Dispatching and/or type mapping can be done here.
 
 ## Type mapping:
 
+### Erlang -> Lua
+
 <table>
   <tr>
     <th>Erlang</th>
     <th>Lua</th>
-    <th>Erlang</th>
-    <th>Remarks</th>
+    <th>Type/Remarks</th>
   </tr>
   <tr>
     <td>nil</td>
     <td>nil</td>
     <td>nil</td>
-    <td>nil in lua</td>
   </tr>
   <tr>
     <td>true</td>
     <td>true</td>
-    <td>true</td>
-    <td>boolean in lua</td>
+    <td>boolean</td>
   </tr>
   <tr>
     <td>false</td>
     <td>false</td>
-    <td>false</td>
-    <td>boolean in lua</td>
+    <td>boolean</td>
   </tr>
   <tr>
     <td>42</td>
     <td>42</td>
-    <td>42</td>
-    <td>number in lua</td>
+    <td>number</td>
   </tr>
   <tr>
     <td>42.123</td>
     <td>42.123</td>
-    <td>42.123</td>
-    <td>number in lua</td>
+    <td>number</td>
   </tr>
   <tr>
     <td>atom</td>
     <td>"atom"</td>
-    <td>&lt;&lt;"atom"&gt;&gt;</td>
-    <td>string in lua, binary, when comes back to erlang</td>
+    <td>string</td>
   </tr>
   <tr>
     <td>"string"</td>
     <td>{115,116,114,105,110,103}</td>
-    <td>"string"</td>
     <td>table with integers in lua, dont use it!</td>
   </tr>
   <tr>
     <td>&lt;&lt;"binary"&gt;&gt;</td>
     <td>"binary"</td>
-    <td>&lt;&lt;"binary"&gt;&gt;</td>
-    <td>string in lua</td>
+    <td>string</td>
   </tr>
   <tr>
     <td>[]</td>
     <td>{}</td>
-    <td>[]</td>
-    <td></td>
+    <td>empty table</td>
   </tr>
   <tr>
     <td>[10, 100, &lt;&lt;"abc"&gt;&gt;]</td>
     <td>{10, 100, "abc"}</td>
-    <td>[10, 100, &lt;&lt;"abc"&gt;&gt;]</td>
-    <td></td>
+    <td>array</td>
   </tr>
   <tr>
     <td>[{yet, value}, {another, value}]</td>
     <td>{yet="value", another="value"}</td>
-    <td>[{&lt;&lt;"another"&gt;&gt;, &lt;&lt;"value"&gt;&gt;}, {&lt;&lt;"yet"&gt;&gt;, &lt;&lt;"value"&gt;&gt;}]</td>
+    <td>table</td>
   </tr>
   <tr>
     <td>[{ugly, "mixed"}, list]</td>
     <td>{ugly="mixed", "list"}</td>
-    <td>[&lt;&lt;"list"&gt;&gt;, {&lt;&lt;"ugly"&gt;&gt;, &lt;&lt;"mixed"&gt;&gt;}]</td>
-    <td>"list" will be accessable at index [1], and "mixed" - under the "ugly" key</td>
+    <td>"list" will be accessable at index [1], and "mixed" - under the "ugly" key. No guarantees about the ordering of elements in a table</td>
   </tr>
 </table>
+
+### Lua -> Erlang
+
+<table>
+  <tr>
+    <th>Lua</th>
+    <th>Erlang</th>
+    <th>Type/Remarks</th>
+  </tr>
+  <tr>
+    <td>nil</td>
+    <td>nil</td>
+    <td>atom</td>
+  </tr>
+  <tr>
+    <td>true</td>
+    <td>true</td>
+    <td>atom</td>
+  </tr>
+  <tr>
+    <td>false</td>
+    <td>false</td>
+    <td>boolean</td>
+  </tr>
+  <tr>
+    <td>42</td>
+    <td>42</td>
+    <td>number</td>
+  </tr>
+  <tr>
+    <td>42.123</td>
+    <td>42.123</td>
+    <td>number</td>
+  </tr>
+  <tr>
+    <td>"string"</td>
+    <td>&lt;&lt;"string"&gt;&gt;</td>
+    <td>binary</td>
+  </tr>
+  <tr>
+    <td>{}</td>
+    <td>[]</td>
+    <td>array is a list</td>
+  </tr>
+  <tr>
+    <td>{10, 100, "abc"}</td>
+    <td>[10, 100, &lt;&lt;"abc"&gt;&gt;]</td>
+    <td>array is a list</td>
+  </tr>
+  <tr>
+    <td>{yet="value", another="value"}</td>
+    <td>[{&lt;&lt;"another"&gt;&gt;, &lt;&lt;"value"&gt;&gt;}, {&lt;&lt;"yet"&gt;&gt;, &lt;&lt;"value"&gt;&gt;}]</td>
+    <td>table is a proplist</td>
+  </tr>
+  <tr>
+    <td>{ugly="mixed", "list"}</td>
+    <td>[&lt;&lt;"list"&gt;&gt;, {&lt;&lt;"ugly"&gt;&gt;, &lt;&lt;"mixed"&gt;&gt;}]</td>
+    <td>list with {key,value} tuples for values with keys, and plain values for the rest. No guarantees about the ordering of elements in a list</td>
+  </tr>
+</table>
+
 
 ## Todo:
 * Get rid of libboost_thread dependency, and replace queue with just a mutex & condition variable
