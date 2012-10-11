@@ -24,8 +24,13 @@ result(_, _) ->
 %% local functions:
 
 init() ->
-    SoName = filename:join(priv_dir(), ?MODULE),
-    ok = erlang:load_nif(filename:absname(SoName), 0).
+    case erlang:system_info(smp_support) of
+        true ->
+            SoName = filename:join(priv_dir(), ?MODULE),
+            ok = erlang:load_nif(filename:absname(SoName), 0);
+        false ->
+            error(no_smp_support)
+    end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
