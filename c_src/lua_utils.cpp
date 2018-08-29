@@ -15,7 +15,7 @@ public :
     {
         lua_pushinteger(vm_, value);
     }
-    void operator()(int64_t const& value)
+    void operator()(ErlNapiSInt64 const& value)
     {
         lua_pushnumber(vm_, value);
     }

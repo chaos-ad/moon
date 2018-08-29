@@ -8,6 +8,7 @@
 
 #include <erl_nif.h>
 
+
 /////////////////////////////////////////////////////////////////////////////
 
 namespace erlcpp {
@@ -17,7 +18,7 @@ namespace erlcpp {
 typedef boost::variant
 <
     int32_t,
-    int64_t,
+    ErlNapiSInt64,
     double
 > num_t;
 

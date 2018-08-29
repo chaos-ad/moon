@@ -17,7 +17,7 @@ num_t from_erl<num_t>(ErlNifEnv* env, ERL_NIF_TERM term)
     if (enif_get_int(env, term, &i32)) {
         return num_t(i32);
     }
-    int64_t i64;
+    ErlNapiSInt64 i64;
     if (enif_get_int64(env, term, &i64)) {
         return num_t(i64);
     }
@@ -159,7 +159,7 @@ ERL_NIF_TERM to_erl(ErlNifEnv* env, int32_t value)
 {
     return enif_make_int(env, value);
 }
-ERL_NIF_TERM to_erl(ErlNifEnv* env, int64_t value)
+ERL_NIF_TERM to_erl(ErlNifEnv* env, ErlNapiSInt64 value)
 {
     return enif_make_long(env, value);
 }

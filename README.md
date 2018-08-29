@@ -4,13 +4,19 @@ Library for calling Lua from Erlang, and back.
 
 ## Dependencies:
 
-Parts of the boost library, somewhat close to 1.48  
+Parts of the boost library, somewhat close to 1.48
 Developement version of lua
 
 These libraries easily can be obtained on ubuntu by running this:
 
 `
 sudo apt-get install libboost1.48-all-dev liblua5.2-dev
+`
+
+or use bootstrap.sh to download dependency
+`
+  ./bootstrap.sh
+  ./rebar co
 `
 
 ## General usage:

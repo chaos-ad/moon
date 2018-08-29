@@ -22,7 +22,7 @@ template <> term_t   from_erl<term_t>(ErlNifEnv* env, ERL_NIF_TERM term);
 /////////////////////////////////////////////////////////////////////////////
 
 ERL_NIF_TERM to_erl(ErlNifEnv* env, int32_t value);
-ERL_NIF_TERM to_erl(ErlNifEnv* env, int64_t value);
+ERL_NIF_TERM to_erl(ErlNifEnv* env, ErlNapiSInt64 value);
 ERL_NIF_TERM to_erl(ErlNifEnv* env, double value);
 ERL_NIF_TERM to_erl(ErlNifEnv* env, num_t const& value);
 ERL_NIF_TERM to_erl(ErlNifEnv* env, lpid_t const& value);
