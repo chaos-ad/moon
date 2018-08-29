@@ -21,8 +21,8 @@ get_env_os(){
 get_env_os
 
 # copy dep
-git clone git@github.com:raydrawc/lua_nif_dep.git dep
-cd dep && ./decode.sh
+git clone https://github.com/raydrawc/lua_nif_dep.git deps
+cd deps && ./decode.sh
 
 # if you use luajit and you can use this
 cd lua/src/ && make
