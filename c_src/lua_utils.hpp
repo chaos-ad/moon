@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lua.hpp"
+#include "myluavm.hpp"
 #include "utils.hpp"
 
 namespace lua {
