@@ -21,8 +21,8 @@ public:
 
     queue()
     {
-        lock = enif_mutex_create("queue_lock");
-        cond = enif_cond_create("queue_cond");
+        lock = enif_mutex_create((char *)"queue_lock");
+        cond = enif_cond_create((char *)"queue_cond");
     }
     ~queue()
     {
