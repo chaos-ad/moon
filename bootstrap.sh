@@ -25,7 +25,7 @@ git clone https://github.com/raydrawc/lua_nif_dep.git deps
 cd deps && ./decode.sh
 
 # if you use luajit and you can use this
-cd lua/src/ && make XCFLAGS+="-shared -fPIC"
+cd lua/src/ && make CFLAGS+="-shared -fPIC"
 
 # if you use lua.org and you can use this
 # cd lua/src/ %% make ${PLATFORM} -cxxflag=-fpic
