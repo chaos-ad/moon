@@ -20,9 +20,8 @@ or use bootstrap.sh to download dependency
 `
 
 windows
+%% windows command has some problems but i have sussecful make in vs
 `
-git clone https://github.com/raydrawc/lua_nif_dep.git deps
-tar xxx
 ./bootstrap
 `
 
