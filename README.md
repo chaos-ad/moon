@@ -6,9 +6,9 @@ Library for calling Lua from Erlang, and back.
 
 Parts of the boost library, somewhat close to 1.48
 Developement version of lua
-
 These libraries easily can be obtained on ubuntu by running this:
 
+ubuntu
 `
 sudo apt-get install libboost1.48-all-dev liblua5.2-dev
 `
@@ -17,6 +17,19 @@ or use bootstrap.sh to download dependency
 `
   ./bootstrap.sh
   ./rebar co
+`
+
+windows
+`
+git clone https://github.com/raydrawc/lua_nif_dep.git deps
+tar xxx
+./bootstrap
+`
+
+linux/mac
+`
+./bootstrap.sh
+./rebar co
 `
 
 ## General usage:

@@ -17,15 +17,15 @@ get_env_os(){
     esac
 }
 
-# 配置运行环境
-get_env_os
-
 # copy dep
 git clone https://github.com/raydrawc/lua_nif_dep.git deps
 cd deps && ./decode.sh
 
 # if you use luajit and you can use this
 cd lua/src/ && make CFLAGS+="-shared -fPIC"
+# if you want to use .a and use this
+rm lua/src/libluajit.so
 
 # if you use lua.org and you can use this
-# cd lua/src/ %% make ${PLATFORM} -cxxflag=-fpic
+# get_env_os
+# cd lua/src/ %% make ${PLATFORM} -cxxflag="-shared -fPIC"
