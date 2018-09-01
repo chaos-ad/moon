@@ -24,7 +24,7 @@ cd deps && ./decode.sh
 # if you use luajit and you can use this
 cd lua/src/ && make CFLAGS+="-shared -fPIC"
 # if you want to use .a and use this
-rm libluajit.so
+rm -f libluajit.so
 
 # if you use lua.org and you can use this
 # get_env_os
