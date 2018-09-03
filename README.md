@@ -13,21 +13,19 @@ ubuntu
 sudo apt-get install libboost1.48-all-dev liblua5.2-dev
 `
 
-or use bootstrap.sh to download dependency
+or use bootstrap.sh to download dependency (boost.variant boost.smartptr luajit2.10-beta3)
 `
   ./bootstrap.sh
   ./rebar co
 `
 
-windows
-%% windows command has some problems but i have sussecful make in vs
+windows (if install visual studio, it will open cl env )
 `
 ./bootstrap
 `
 
-linux/mac
+linux/mac (Modify rebar.config according to your specific needs)
 `
-./bootstrap.sh
 ./rebar co
 `
 
