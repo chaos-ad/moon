@@ -21,12 +21,12 @@ or use bootstrap.sh to download dependency (boost.variant boost.smartptr luajit2
 
 windows (if install visual studio, it will open cl env )
 `
-./bootstrap
+  ./bootstrap
 `
 
 linux/mac (Modify rebar.config according to your specific needs)
 `
-./rebar co
+  ./rebar co
 `
 
 ## General usage:
