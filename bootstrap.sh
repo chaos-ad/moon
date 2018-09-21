@@ -17,6 +17,17 @@ get_env_os(){
     esac
 }
 
+https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.bz2
+https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.gz
+git clone http://luajit.org/git/luajit-2.0.git
+
+BOOST_DL_PATH=
+BOOST=boost_1_68_0
+
+LUA_DL_PATH=
+LUA=
+
+
 # copy dep
 git clone https://github.com/raydrawc/lua_nif_dep.git deps
 cd deps && ./decode.sh
