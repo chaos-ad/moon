@@ -17,9 +17,12 @@ get_env_os(){
     esac
 }
 
-https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.bz2
-https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.gz
-git clone http://luajit.org/git/luajit-2.0.git
+PWD=`pwd`
+
+git clone http://luajit.org/git/luajit-2.0.git luajit
+cd luajit
+git checkout v2.1
+make install
 
 BOOST_DL_PATH=
 BOOST=boost_1_68_0
