@@ -3,6 +3,13 @@
 #include "errors.hpp"
 #include "lua_utils.hpp"
 
+static int test_trackback(lua_State *L) {
+    lua_getglobal(L, "print");
+    lua_getfield(L, -1, "debug");
+    lua_getg
+
+}
+
 namespace lua {
 
 /////////////////////////////////////////////////////////////////////////////
