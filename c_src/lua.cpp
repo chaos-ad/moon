@@ -11,7 +11,7 @@ static int test_traceback(lua_State *L) {
     lua_remove(L, -2); // remove debug<table>
     lua_pcall(L, 0, 1, 0);  // debug.traceback()
     lua_pcall(L, 1, 1, 0); // print( debug.traceback().result)
-    return 1
+    return 1;
 }
 
 namespace lua {
