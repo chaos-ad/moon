@@ -143,6 +143,8 @@ erlcpp::term_t peek(lua_State * vm)
             const char * val = lua_tolstring(vm, -1, &len);
             return erlcpp::binary_t(erlcpp::binary_t::data_t(val, val+len));
         }
+        case LUA_TTABLE:
+        {
             erlcpp::list_t result;
             lua_pushnil(vm);
             for(int32_t index = 1; lua_next(vm, -2); ++index)

@@ -3,11 +3,15 @@
 #include "errors.hpp"
 #include "lua_utils.hpp"
 
-static int test_trackback(lua_State *L) {
-    lua_getglobal(L, "print");
-    lua_getfield(L, -1, "debug");
-    lua_getg
-
+static int test_traceback(lua_State *L) {
+    // eq lua code : print(debug.traceback())
+    lua_getglobal(L, "print"); // print 1
+    lua_getglobal(L, "debug"); // print 1 debug 2
+    lua_getfield(L, -1, "traceback"); // print 1 debug 2 debug.traceback 3
+    lua_remove(L, -2); // remove debug<table>
+    lua_pcall(L, 0, 1, 0);  // debug.traceback()
+    lua_pcall(L, 1, 1, 0); // print( debug.traceback().result)
+    return 1
 }
 
 namespace lua {
@@ -86,10 +90,12 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::eval_t const& eval)
     {
         stack_guard_t guard(vm());
+        lua_pushcfunction(vm().state(), test_traceback);
+        int top = lua_gettop(vm().state()); // get function test_traceback
         try
         {
             if ( luaL_loadbuffer(vm().state(), eval.code.data(), eval.code.size(), "line") ||
-                    lua_pcall(vm().state(), 0, LUA_MULTRET, 0) )
+                    lua_pcall(vm().state(), 0, LUA_MULTRET, top)/* set errfunc id */ )
             {
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
@@ -123,7 +129,10 @@ struct call_handler : public base_handler<void>
 
             lua::stack::push_all(vm().state(), call.args);
 
-            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0))
+            lua_pushcfunction(vm().state(), test_traceback);
+            int top = lua_gettop(vm().state()); // get function test_traceback
+
+            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, top)  )
             {
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
