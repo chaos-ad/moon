@@ -50,7 +50,12 @@ load(Pid, File) ->
     load(Pid, File, infinity).
 
 load(Pid, File, Timeout) ->
-    moon_vm:load(Pid, File, Timeout).
+    case moon_vm:load(Pid, File, Timeout) of
+        {ok, Info} ->
+            {ok, Info};
+        {error, ErrInfo} ->
+            {error, handle_error(ErrInfo)}
+    end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -58,7 +63,12 @@ eval(Pid, Code) ->
     eval(Pid, Code, infinity).
 
 eval(Pid, Code, Timeout) ->
-    moon_vm:eval(Pid, Code, Timeout).
+    case moon_vm:eval(Pid, Code, Timeout) of
+        {ok, Info} ->
+            {ok, Info};
+        {error, ErrInfo} ->
+            {error, handle_error(ErrInfo)}
+    end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -69,3 +79,14 @@ call(Pid, Fun, Args, Timeout) ->
     moon_vm:call(Pid, Fun, Args, Timeout).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+handle_error(Err) when erlang:is_tuple(Err)  ->
+    concat_error([], erlang:tuple_to_list(Err));
+handle_error(Err)  ->
+    Err.
+
+concat_error(Text, [Next | Tils]) ->
+    NewText = lists:concat([Text, "~n", Next]),
+    concat_error(NewText, Tils);
+concat_error(Err, []) ->
+    Err.
