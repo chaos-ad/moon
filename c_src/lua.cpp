@@ -11,6 +11,7 @@ static int test_traceback(lua_State *L) {
     lua_remove(L, -2); // remove debug<table>
     lua_pcall(L, 0, 1, 0);  // debug.traceback()
     lua_pcall(L, 1, 1, 0); // print( debug.traceback().result)
+    lua_remove(L, -1);
     return 1;
 }
 
@@ -123,14 +124,15 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::call_t const& call)
     {
         stack_guard_t guard(vm());
+
+        lua_pushcfunction(vm().state(), test_traceback);
+        int top = lua_gettop(vm().state()); // get function test_traceback
+
         try
         {
             lua_getglobal(vm().state(), call.fun.c_str());
 
             lua::stack::push_all(vm().state(), call.args);
-
-            lua_pushcfunction(vm().state(), test_traceback);
-            int top = lua_gettop(vm().state()); // get function test_traceback
 
             if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, top)  )
             {
