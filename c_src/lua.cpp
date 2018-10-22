@@ -90,16 +90,18 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::eval_t const& eval)
     {
         stack_guard_t guard(vm());
-
-        lua_pushcfunction(vm().state(), test_traceback);
-        int top = lua_gettop(vm().state()); // get function test_traceback
-
         try
         {
             if ( luaL_loadbuffer(vm().state(), eval.code.data(), eval.code.size(), "line") ||
                     lua_pcall(vm().state(), 0, LUA_MULTRET, top)/* set errfunc id */ )
             {
-                lua_remove(vm().state(), top); // remove test_traceback for stace
+                lua_getglobal(L, "error"); // print 1
+                lua_getglobal(L, "debug"); // print 1 debug 2
+                lua_getfield(L, -1, "traceback"); // print 1 debug 2 debug.traceback 3
+                lua_remove(L, -2); // remove debug<table>
+                lua_pcall(L, 0, 1, 0);  // debug.traceback()
+                lua_pcall(L, 1, 1, 0); // print( debug.traceback().result)
+
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
                 result[1] = lua::stack::pop(vm().state());
@@ -107,7 +109,6 @@ struct call_handler : public base_handler<void>
             }
             else
             {
-                lua_remove(vm().state(), top); // remove test_traceback for stace
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("ok");
                 result[1] = lua::stack::pop_all(vm().state());
@@ -127,10 +128,6 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::call_t const& call)
     {
         stack_guard_t guard(vm());
-
-        lua_pushcfunction(vm().state(), test_traceback);
-        int top = lua_gettop(vm().state()); // get function test_traceback
-
         try
         {
             lua_getglobal(vm().state(), call.fun.c_str());
@@ -139,7 +136,13 @@ struct call_handler : public base_handler<void>
 
             if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, top)  )
             {
-                lua_remove(vm().state(), top); // remove test_traceback for stace
+                lua_getglobal(L, "error"); // print 1
+                lua_getglobal(L, "debug"); // print 1 debug 2
+                lua_getfield(L, -1, "traceback"); // print 1 debug 2 debug.traceback 3
+                lua_remove(L, -2); // remove debug<table>
+                lua_pcall(L, 0, 1, 0);  // debug.traceback()
+                lua_pcall(L, 1, 1, 0); // print( debug.traceback().result)
+
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
                 result[1] = lua::stack::pop(vm().state());
@@ -147,7 +150,6 @@ struct call_handler : public base_handler<void>
             }
             else
             {
-                lua_remove(vm().state(), top); // remove test_traceback for stace
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("ok");
                 result[1] = lua::stack::pop_all(vm().state());
