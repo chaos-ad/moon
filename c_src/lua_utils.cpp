@@ -1,6 +1,30 @@
 #include "errors.hpp"
 #include "lua_utils.hpp"
 
+int str_replace(char* str, const char* str_src, const char* str_des){
+    char *ptr=NULL;
+    char buff[512];
+    char buff2[512];
+    int i = 0;
+
+    if(str != NULL){
+        strcpy(buff2, str);
+    }else{
+        printf("str_replace err!\n");
+        return -1;
+    }
+    memset(buff, 0x00, sizeof(buff));
+    while((ptr = strstr( buff2, str_src)) !=0){
+        if(ptr-buff2 != 0) memcpy(&buff[i], buff2, ptr - buff2);
+        memcpy(&buff[i + ptr - buff2], str_des, strlen(str_des));
+        i += ptr - buff2 + strlen(str_des);
+        strcpy(buff2, ptr + strlen(str_src));
+    }
+    strcat(buff,buff2);
+    strcpy(str,buff);
+    return 0;
+}
+
 namespace lua {
 namespace stack {
 
@@ -140,8 +164,15 @@ erlcpp::term_t peek(lua_State * vm)
         case LUA_TSTRING:
         {
             std::size_t len = 0;
-            const char * val = lua_tolstring(vm, -1, &len);
+            char tmp[512];
+            char * val = strcmp(tmp, lua_tolstring(vm, -1, &len));
+            str_replace(val, "\t", "    ");
+            str_replace(val, "\n", "~n");
+            len = strlen(val);
             return erlcpp::binary_t(erlcpp::binary_t::data_t(val, val+len));
+
+            // const char * val = lua_tolstring(vm, -1, &len);
+            // return erlcpp::binary_t(erlcpp::binary_t::data_t(val, val+len));
         }
         case LUA_TTABLE:
         {

@@ -93,7 +93,7 @@ struct call_handler : public base_handler<void>
 
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
-                result[1] = lua::stack::pop(vm().state());
+                result[1] = lua::stack::pop_all(vm().state());
                 send_result(vm(), "moon_response", result);
             }
             else
@@ -134,7 +134,7 @@ struct call_handler : public base_handler<void>
 
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
-                result[1] = lua::stack::pop(vm().state());
+                result[1] = lua::stack::pop_all(vm().state());
                 send_result(vm(), "moon_response", result);
             }
             else
