@@ -95,12 +95,12 @@ struct call_handler : public base_handler<void>
             if ( luaL_loadbuffer(vm().state(), eval.code.data(), eval.code.size(), "line") ||
                     lua_pcall(vm().state(), 0, LUA_MULTRET, top)/* set errfunc id */ )
             {
-                lua_getglobal(L, "error"); // print 1
-                lua_getglobal(L, "debug"); // print 1 debug 2
-                lua_getfield(L, -1, "traceback"); // print 1 debug 2 debug.traceback 3
-                lua_remove(L, -2); // remove debug<table>
-                lua_pcall(L, 0, 1, 0);  // debug.traceback()
-                lua_pcall(L, 1, 1, 0); // print( debug.traceback().result)
+                lua_getglobal(vm().state(), "error"); // print 1
+                lua_getglobal(vm().state(), "debug"); // print 1 debug 2
+                lua_getfield(vm().state(), -1, "traceback"); // print 1 debug 2 debug.traceback 3
+                lua_remove(vm().state(), -2); // remove debug<table>
+                lua_pcall(vm().state(), 0, 1, 0);  // debug.traceback()
+                lua_pcall(vm().state(), 1, 1, 0); // print( debug.traceback().result)
 
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
@@ -136,12 +136,12 @@ struct call_handler : public base_handler<void>
 
             if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, top)  )
             {
-                lua_getglobal(L, "error"); // print 1
-                lua_getglobal(L, "debug"); // print 1 debug 2
-                lua_getfield(L, -1, "traceback"); // print 1 debug 2 debug.traceback 3
-                lua_remove(L, -2); // remove debug<table>
-                lua_pcall(L, 0, 1, 0);  // debug.traceback()
-                lua_pcall(L, 1, 1, 0); // print( debug.traceback().result)
+                lua_getglobal(vm().state(), "error"); // print 1
+                lua_getglobal(vm().state(), "debug"); // print 1 debug 2
+                lua_getfield(vm().state(), -1, "traceback"); // print 1 debug 2 debug.traceback 3
+                lua_remove(vm().state(), -2); // remove debug<table>
+                lua_pcall(vm().state(), 0, 1, 0);  // debug.traceback()
+                lua_pcall(vm().state(), 1, 1, 0); // print( debug.traceback().result)
 
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
