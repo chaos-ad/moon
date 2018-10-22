@@ -81,7 +81,7 @@ call(Pid, Fun, Args, Timeout) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 handle_error(Err) when erlang:is_tuple(Err)  ->
-    concat_error([], erlang:tuple_to_list(Err));
+    concat_error([], lists:reverse(erlang:tuple_to_list(Err)));
 handle_error(Err)  ->
     Err.
 
