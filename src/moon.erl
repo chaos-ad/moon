@@ -85,6 +85,8 @@ handle_error(Err) when erlang:is_tuple(Err)  ->
 handle_error(Err)  ->
     Err.
 
+concat_error(Text, [Next | Tils]) when erlang:is_bitstring(Next) ->
+    concat_error(Text, [erlang:bitstring_to_list(Next) | Tils]);
 concat_error(Text, [Next | Tils]) ->
     NewText = lists:concat([Text, "~n", Next]),
     concat_error(NewText, Tils);
