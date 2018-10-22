@@ -165,7 +165,7 @@ erlcpp::term_t peek(lua_State * vm)
         {
             std::size_t len = 0;
             char tmp[512];
-            char * val = strcmp(tmp, lua_tolstring(vm, -1, &len));
+            char * val = strcpy(tmp, lua_tolstring(vm, -1, &len));
             str_replace(val, "\t", "    ");
             str_replace(val, "\n", "~n");
             len = strlen(val);
