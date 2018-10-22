@@ -3,17 +3,6 @@
 #include "errors.hpp"
 #include "lua_utils.hpp"
 
-static int test_traceback(lua_State *L) {
-    // eq lua code : print(debug.traceback())
-    lua_getglobal(L, "print"); // print 1
-    lua_getglobal(L, "debug"); // print 1 debug 2
-    lua_getfield(L, -1, "traceback"); // print 1 debug 2 debug.traceback 3
-    lua_remove(L, -2); // remove debug<table>
-    lua_pcall(L, 0, 1, 0);  // debug.traceback()
-    lua_pcall(L, 1, 1, 0); // print( debug.traceback().result)
-    return 1;
-}
-
 namespace lua {
 
 /////////////////////////////////////////////////////////////////////////////
@@ -93,7 +82,7 @@ struct call_handler : public base_handler<void>
         try
         {
             if ( luaL_loadbuffer(vm().state(), eval.code.data(), eval.code.size(), "line") ||
-                    lua_pcall(vm().state(), 0, LUA_MULTRET, top)/* set errfunc id */ )
+                    lua_pcall(vm().state(), 0, LUA_MULTRET, 0)/* set errfunc id */ )
             {
                 lua_getglobal(vm().state(), "error"); // print 1
                 lua_getglobal(vm().state(), "debug"); // print 1 debug 2
@@ -134,7 +123,7 @@ struct call_handler : public base_handler<void>
 
             lua::stack::push_all(vm().state(), call.args);
 
-            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, top)  )
+            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0)  )
             {
                 lua_getglobal(vm().state(), "error"); // print 1
                 lua_getglobal(vm().state(), "debug"); // print 1 debug 2
