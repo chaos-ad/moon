@@ -42,7 +42,7 @@ wget https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.bz2
 tar -jxv -f boost_1_68_0.tar.bz2
 mv boost_1_68_0 boost
 cd boost && ./bootstrap.sh
-./b2 stage --with-thread link=static threading=multi runtime-link=static CFLAGS+="-shared -fPIC -g"
+./b2 stage --with-thread link=static threading=multi runtime-link=static cxxflags="-shared -fPIC"
 
 cd ..
 wget https://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz
