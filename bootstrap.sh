@@ -37,9 +37,9 @@ cd boost && ./bootstrap.sh
 cd ${ROOT}/deps
 wget -c -t 0 -w 15 "https://www.lua.org/ftp/lua-5.2.4.tar.gz"
 tar -zxv -f lua-5.2.4.tar.gz
-mv lua-5.2.4.tar.gz lua
+mv lua-5.2.4 lua
 
-cd lua/src
+cd ${ROOT}/deps/lua/src
 make ${PLATFORM} CFLAGS+="-shared -fPIC -g"
 
 if [ $PLATFORM == "mingw" ]; then
