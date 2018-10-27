@@ -53,12 +53,12 @@ if exist %windir%\SysWOW64 set ENVPATH=%VCVARS%vcvars64.bat
 
 call "%ENVPATH%"
 
-cd deps/luajit/src
+REM cd deps/luajit/src
 
 rem if use my dep luajit,use this. else rem this
 REM call "msvcbuild.bat" static
 
-cd ../../..
+REM cd ../../..
 call "rebar.cmd" co
 
 pause

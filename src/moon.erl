@@ -51,6 +51,7 @@ load(Pid, File) ->
 
 load(Pid, File, Timeout) ->
     case moon_vm:load(Pid, File, Timeout) of
+        ok -> ok;
         {ok, Info} ->
             {ok, Info};
         {error, ErrInfo} ->
@@ -64,6 +65,7 @@ eval(Pid, Code) ->
 
 eval(Pid, Code, Timeout) ->
     case moon_vm:eval(Pid, Code, Timeout) of
+        ok -> ok;
         {ok, Info} ->
             {ok, Info};
         {error, ErrInfo} ->
@@ -76,19 +78,34 @@ call(Pid, Fun, Args) ->
     call(Pid, Fun, Args, infinity).
 
 call(Pid, Fun, Args, Timeout) ->
-    moon_vm:call(Pid, Fun, Args, Timeout).
+    case moon_vm:call(Pid, Fun, Args, Timeout) of
+        ok -> ok;
+        {ok, Info} ->
+            {ok, Info};
+        {error, ErrInfo} ->
+            {error, handle_error(ErrInfo)}
+    end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%% return error msg
 handle_error(Err) when erlang:is_tuple(Err)  ->
-    concat_error([], lists:reverse(erlang:tuple_to_list(Err)));
+    concat_error(lists:reverse(erlang:tuple_to_list(Err)), []);
 handle_error(Err)  ->
+    %% nil function ...
     Err.
 
-concat_error(Text, [Next | Tils]) when erlang:is_bitstring(Next) ->
-    concat_error(Text, [erlang:bitstring_to_list(Next) | Tils]);
-concat_error(Text, [Next | Tils]) ->
-    NewText = lists:concat([Text, "~n", Next]),
-    concat_error(NewText, Tils);
-concat_error(Err, []) ->
+%% contxt all error msg to one
+concat_error([Text | Tils], Rtn) when erlang:is_tuple(Text) ->
+    NewRtn = lists:concat([Rtn | concat_error([], erlang:tuple_to_list(Text))]),
+    concat_error(Tils, NewRtn);
+%% handle error msg
+concat_error([Text | Tils], Rtn) when erlang:is_bitstring(Text) ->
+    NewText = re:replace(Text, "\n", "~n", [{return, list}, global]),
+    %% c "\t" == 4 space
+    NewText1 = re:replace(NewText, "\t", "    ", [{return, list}, global]),
+    concat_error([NewText1 | Tils], Rtn);
+concat_error([Text | Tils], Rtn) ->
+    NewRtn = lists:concat([Rtn, "~n", Text]),
+    concat_error(Tils, NewRtn);
+concat_error([], Err) ->
     Err.
