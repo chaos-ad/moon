@@ -1,4 +1,4 @@
-px = require("px")
+px = require("lua_test.px")
 -- xd = require("xd")
 -- local M = {}
 
