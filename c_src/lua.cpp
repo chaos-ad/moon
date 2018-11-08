@@ -146,7 +146,7 @@ struct call_handler : public base_handler<void>
 
             lua::stack::push_all(vm().state(), call.args);
 
-            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0)  )
+            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, tb)  )
             {
                 lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
