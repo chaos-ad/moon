@@ -3,26 +3,22 @@
 #include "errors.hpp"
 #include "lua_utils.hpp"
 
-lua_State *getthread(lua_State *L, int *arg) {
-  if (lua_isthread(L, 1)) {
-    *arg = 1;
-    return lua_tothread(L, 1);
+static int traceback (lua_State *L) {
+  if (!lua_isstring(L, 1))  /* 'message' not a string? */
+    return 1;  /* keep it intact */
+  lua_getlocal(L, "debug");
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    return 1;
   }
-  else {
-    *arg = 0;
-    return L;
+  lua_getfield(L, -1, "traceback");
+  if (!lua_isfunction(L, -1)) {
+    lua_pop(L, 2);
+    return 1;
   }
-}
-int db_traceback (lua_State *L) {
-  int arg;
-  lua_State *L1 = getthread(L, &arg);
-  const char *msg = lua_tostring(L, arg + 1);
-  if (msg == NULL && !lua_isnoneornil(L, arg + 1))  /* non-string 'msg'? */
-    lua_pushvalue(L, arg + 1);  /* return it untouched */
-  else {
-    int level = luaL_optint(L, arg + 2, (L == L1) ? 1 : 0);
-    luaL_traceback(L, L1, msg, level);
-  }
+  lua_pushvalue(L, 1);  /* pass error message */
+  lua_pushinteger(L, 2);  /* skip this function and traceback */
+  lua_call(L, 2, 1);  /* call debug.traceback */
   return 1;
 }
 
@@ -102,12 +98,16 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::eval_t const& eval)
     {
         stack_guard_t guard(vm());
+
+        lua_pushcfunction(vm().state(), traceback);
+        int tb = lua_gettop(vm().state());
+
         try
         {
             if ( luaL_loadbuffer(vm().state(), eval.code.data(), eval.code.size(), "line") ||
-                    lua_pcall(vm().state(), 0, LUA_MULTRET, 0)/* set errfunc id */ )
+                    lua_pcall(vm().state(), 0, LUA_MULTRET, tb)/* set errfunc id */ )
             {
-                db_traceback(vm().state());
+                lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
                 result[1] = lua::stack::pop_all(vm().state());
@@ -115,6 +115,7 @@ struct call_handler : public base_handler<void>
             }
             else
             {
+                lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("ok");
                 result[1] = lua::stack::pop_all(vm().state());
@@ -123,6 +124,7 @@ struct call_handler : public base_handler<void>
         }
         catch( std::exception & ex )
         {
+            lua_remove(vm().state(), tb);
             erlcpp::tuple_t result(2);
             result[0] = erlcpp::atom_t("error");
             result[1] = erlcpp::atom_t(ex.what());
@@ -134,6 +136,10 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::call_t const& call)
     {
         stack_guard_t guard(vm());
+
+        lua_pushcfunction(vm().state(), traceback);
+        int tb = lua_gettop(vm().state());
+
         try
         {
             lua_getglobal(vm().state(), call.fun.c_str());
@@ -142,7 +148,7 @@ struct call_handler : public base_handler<void>
 
             if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0)  )
             {
-                db_traceback(vm().state());
+                lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
                 result[1] = lua::stack::pop_all(vm().state());
@@ -150,6 +156,7 @@ struct call_handler : public base_handler<void>
             }
             else
             {
+                lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("ok");
                 result[1] = lua::stack::pop_all(vm().state());
@@ -158,6 +165,7 @@ struct call_handler : public base_handler<void>
         }
         catch( std::exception & ex )
         {
+            lua_remove(vm().state(), tb);
             erlcpp::tuple_t result(2);
             result[0] = erlcpp::atom_t("error");
             result[1] = erlcpp::atom_t(ex.what());
