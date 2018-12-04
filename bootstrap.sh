@@ -8,6 +8,7 @@
 ## in sometime will core dump
 
 ROOT=$(cd "$(dirname "$0")"; pwd)
+LuaVer=lua-5.2.4
 
 # 检测运行环境
 get_env_os(){
@@ -35,15 +36,9 @@ cd boost && ./bootstrap.sh
 ./b2 stage --with-thread link=static threading=multi runtime-link=static cxxflags="-shared -fPIC"
 
 cd ${ROOT}/deps
-wget -c -t 0 -w 15 "https://www.lua.org/ftp/lua-5.2.4.tar.gz"
-tar -zxv -f lua-5.2.4.tar.gz
+wget -c -t 0 -w 15 "https://www.lua.org/ftp/${LuaVer}.tar.gz"
+tar -zxv -f ${LuaVer}.tar.gz
 mv lua-5.2.4 lua
 
 cd ${ROOT}/deps/lua/src
 make ${PLATFORM} CFLAGS+="-shared -fPIC -g"
-
-if [ $PLATFORM == "mingw" ]; then
-    cd ..
-    ./bootstrap.bat
-    exit 0
-fi
