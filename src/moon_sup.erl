@@ -14,7 +14,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+    %% load nif
+    case moon_nif:init() of
+        ok ->
+            supervisor:start_link({local, ?MODULE}, ?MODULE, []);
+        Err ->
+            Err
+    end.
 
 start_child(Options) ->
     supervisor:start_child(?MODULE, Options).

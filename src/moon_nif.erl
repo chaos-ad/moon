@@ -1,7 +1,7 @@
 -module(moon_nif).
 
 -export([start/1, load/2, eval/2, call/3, result/2]).
--on_load(init/0).
+-export([init/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -27,7 +27,8 @@ init() ->
     case erlang:system_info(smp_support) of
         true ->
             SoName = filename:join(priv_dir(), ?MODULE),
-            ok = erlang:load_nif(filename:absname(SoName), 0);
+            %% avoid core dump
+            erlang:load_nif(filename:absname(SoName), 0);
         false ->
             error(no_smp_support)
     end.

@@ -1,17 +1,40 @@
 # Moon
 
-Library for calling Lua from Erlang, and back.
+Library for calling Lua from Erlang, and back.  
+这是个Erlang可以调用Lua和Lua回调的动态库编译工具
 
 ## Dependencies:
 
-Parts of the boost library, somewhat close to 1.48  
-Developement version of lua
+该动态库需要依赖部分的boost和lua源码
 
-These libraries easily can be obtained on ubuntu by running this:
+原作者 chaos/moon 推荐使用命令
 
-`
-sudo apt-get install libboost1.48-all-dev liblua5.2-dev
-`
+```
+ubuntu sudo apt-get install libboost1.48-all-dev liblua5.2-dev
+```
+
+基于原版制作了引导安装文件 `bootstrap.sh` ,可以辅助安装依赖库  
+简易安装可以使用以下命令
+
+like linux
+
+```bash
+./bootstrap.sh  
+./rebar co
+```
+
+windows
+
+```bash
+./booststrap.sh
+./vsrebar.bat
+```
+
+ps: 该命令已在基于centos, ubuntu, mac测试可用，windows版本没有做具体测试，理论上是可用的。如果必须在windows使用，请在vs手动编译  
+
+<font size=5 color=red >ps:ps:ps:</font> 请<font size=4 color=red>不要不要不要</font>使用 `luajit` 作为lua源码，超级容易导致Erlang崩溃，别问我是怎么知道的   :joy:
+
+如果要修改默认配置项请修改`bootstrap.sh` 与 `rebar.config`
 
 ## General usage:
 

@@ -3,6 +3,25 @@
 #include "errors.hpp"
 #include "lua_utils.hpp"
 
+static int traceback (lua_State *L) {
+     if (!lua_isstring(L, 1))  /* 'message' not a string? */
+         return 1;  /* keep it intact */
+    lua_getglobal(L, "debug");
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return 1;
+    }
+    lua_getfield(L, -1, "traceback");
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 2);
+        return 1;
+    }
+    lua_pushvalue(L, 1);  /* pass error message */
+    lua_pushinteger(L, 2);  /* skip this function and traceback */
+    lua_call(L, 2, 1);  /* call debug.traceback */
+    return 1;
+}
+
 namespace lua {
 
 /////////////////////////////////////////////////////////////////////////////
@@ -79,18 +98,24 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::eval_t const& eval)
     {
         stack_guard_t guard(vm());
+
+        lua_pushcfunction(vm().state(), traceback);
+        int tb = lua_gettop(vm().state());
+
         try
         {
             if ( luaL_loadbuffer(vm().state(), eval.code.data(), eval.code.size(), "line") ||
-                    lua_pcall(vm().state(), 0, LUA_MULTRET, 0) )
+                    lua_pcall(vm().state(), 0, LUA_MULTRET, tb)/* set errfunc id */ )
             {
+                lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
-                result[1] = lua::stack::pop(vm().state());
+                result[1] = lua::stack::pop_all(vm().state());
                 send_result(vm(), "moon_response", result);
             }
             else
             {
+                lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("ok");
                 result[1] = lua::stack::pop_all(vm().state());
@@ -99,6 +124,7 @@ struct call_handler : public base_handler<void>
         }
         catch( std::exception & ex )
         {
+            lua_remove(vm().state(), tb);
             erlcpp::tuple_t result(2);
             result[0] = erlcpp::atom_t("error");
             result[1] = erlcpp::atom_t(ex.what());
@@ -110,21 +136,27 @@ struct call_handler : public base_handler<void>
     void operator()(vm_t::tasks::call_t const& call)
     {
         stack_guard_t guard(vm());
+
+        lua_pushcfunction(vm().state(), traceback);
+        int tb = lua_gettop(vm().state());
+
         try
         {
             lua_getglobal(vm().state(), call.fun.c_str());
 
             lua::stack::push_all(vm().state(), call.args);
 
-            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, 0))
+            if (lua_pcall(vm().state(), call.args.size(), LUA_MULTRET, tb)  )
             {
+                lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("error");
-                result[1] = lua::stack::pop(vm().state());
+                result[1] = lua::stack::pop_all(vm().state());
                 send_result(vm(), "moon_response", result);
             }
             else
             {
+                lua_remove(vm().state(), tb);
                 erlcpp::tuple_t result(2);
                 result[0] = erlcpp::atom_t("ok");
                 result[1] = lua::stack::pop_all(vm().state());
@@ -133,6 +165,7 @@ struct call_handler : public base_handler<void>
         }
         catch( std::exception & ex )
         {
+            lua_remove(vm().state(), tb);
             erlcpp::tuple_t result(2);
             result[0] = erlcpp::atom_t("error");
             result[1] = erlcpp::atom_t(ex.what());
